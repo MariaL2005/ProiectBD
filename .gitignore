@@ -1,0 +1,37 @@
+# --- Dependinte Node.js ---
+# Nu urcam niciodata folderul node_modules (este urias si poate fi recreat cu npm install)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+
+# --- Setari IDE (WebStorm / IntelliJ) ---
+# Ignoram setarile locale, dar pastram structura de baza daca e nevoie.
+# Din fisierul tau existent .idea/.gitignore rezulta ca urmatoarele sunt deja marcate:
+.idea/shelf/
+.idea/workspace.xml
+.idea/httpRequests/
+.idea/queries/
+.idea/dataSources/
+.idea/dataSources.local.xml
+# Recomandat: ignorarea intregului folder .idea daca lucrezi singur/a
+# .idea/
+
+# --- Fisiere de sistem / OS ---
+.DS_Store
+Thumbs.db
+
+# --- Log-uri si fisiere temporare ---
+logs
+*.log
+npm-debug.log*
+
+# --- Securitate (Fisiere Environment) ---
+# Daca pe viitor vei folosi un fisier .env pentru parolele bazei de date
+.env
+
+# --- Baza de date ---
+# Daca exporti dump-uri de date, e bine sa nu fie versionate daca sunt mari
+*.dmp
+*.log
