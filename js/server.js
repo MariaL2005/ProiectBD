@@ -1,19 +1,19 @@
 const express = require('express');
 const oracledb = require('oracledb');
 const cors = require('cors');
-const path = require('path'); // 1. Importăm modulul path pentru a gestiona directoarele
+const path = require('path');
 
 const app = express();
 const PORT = 3000;
 
+// Middleware-uri esențiale
 app.use(cors());
-app.use(express.json());
+app.use(express.json()); // Permite citirea req.body
 
-// 2. Setăm Express să servească fișierele din directorul părinte (rădăcina proiectului)
-// Folosind __dirname, serverul va găsi corect fișierele indiferent de unde deschizi terminalul
+// Servim fișierele statice din directorul părinte (rădăcina proiectului)
 app.use(express.static(path.join(__dirname, '../')));
 
-// Configurația bazei de date
+// Configurația bazei de date Oracle
 const dbConfig = {
     user: 'ADAPOST_ADMIN',
     password: 'student',
@@ -83,7 +83,9 @@ app.post('/api/angajati', async (req, res) => {
     }
 });
 
+// Comanda vitală care ține serverul pornit în fundal
 app.listen(PORT, () => {
-    console.log(`Serverul rulează pe http://localhost:${PORT}`);
-    console.log(`Deschide formularul la: http://localhost:${PORT}/volunteer.html`);
+    console.log(`\n✅ Serverul de backend a pornit cu succes!`);
+    console.log(`🌐 Ascultă pe adresa: http://localhost:${PORT}`);
+    console.log(`👉 Accesează formularul deschizând în browser: http://localhost:${PORT}/volunteer.html\n`);
 });
