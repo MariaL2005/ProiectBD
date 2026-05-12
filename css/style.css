@@ -151,3 +151,165 @@ img {
     border-radius: 40px; /* Highly rounded corners to match the design */
     box-shadow: 0 10px 30px rgba(0,0,0,0.2); /* Stronger shadow on the image for depth */
 }
+
+/* ==========================================================================
+   Stiluri specifice pentru Pagina de Aplicare (Formular)
+   ========================================================================== */
+
+.apply-page {
+    /* Folosim min-height pentru a acoperi ecranul și adăugăm padding sus pentru a nu se suprapune cu meniul fixed */
+    min-height: 100vh;
+    padding-top: 130px;
+    padding-bottom: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.apply-container {
+    max-width: var(--container-width);
+    width: 100%;
+    margin: 0 auto;
+    padding: 0 40px;
+    display: flex;
+    gap: 40px;
+    align-items: flex-start;
+    justify-content: space-between;
+}
+
+/* --- Coloana din stânga (Titlu + Formular) --- */
+.form-column {
+    flex: 1;
+    max-width: 580px;
+}
+
+.form-main-title {
+    font-size: 46px;
+    font-weight: 700;
+    color: var(--accent-gold); /* Cremul/Auriul folosit în temă */
+    line-height: 1.15;
+    margin-bottom: 30px;
+    letter-spacing: -0.5px;
+}
+
+/* Containerul alb al formularului */
+.application-form {
+    background-color: #FFFFFF;
+    padding: 35px 40px;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    color: #333333; /* Resetează culoarea textului la închis pe fundal alb */
+}
+
+.input-row {
+    display: flex;
+    gap: 20px;
+}
+
+.input-row .input-group {
+    flex: 1;
+}
+
+.input-group {
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.input-group label {
+    font-size: 13px;
+    font-weight: 500;
+    color: #444444;
+    margin-bottom: 6px;
+}
+
+/* Câmpurile de introducere text și select */
+.application-form input,
+.application-form select {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid #E0E0E0;
+    border-radius: 6px;
+    font-family: var(--font-family);
+    font-size: 14px;
+    color: #333333;
+    outline: none;
+    transition: border-color 0.2s ease;
+    background-color: #FFFFFF;
+}
+
+.application-form input::placeholder {
+    color: #BBBBBB;
+}
+
+.application-form input:focus,
+.application-form select:focus {
+    border-color: #385E32; /* O nuanță de verde la activare */
+}
+
+/* Butonul de Submit */
+.form-submit-btn {
+    width: 100%;
+    padding: 12px;
+    background-color: #3B5323; /* Verdele închis/măsliniu din imaginea ta */
+    color: #FFFFFF;
+    border: none;
+    border-radius: 6px;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    margin-top: 10px;
+    font-family: var(--font-family);
+    transition: opacity 0.2s ease;
+}
+
+.form-submit-btn:hover {
+    opacity: 0.9;
+}
+
+/* --- Coloana din dreapta (Imaginea) --- */
+.image-column {
+    flex: 1;
+    max-width: 500px;
+    /* Împingem puțin imaginea mai jos pentru a se alinia estetic cu formularul */
+    margin-top: 20px;
+}
+
+.image-column img {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    border-radius: 24px; /* Colțuri foarte rotunjite, exact ca în poză */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+}
+
+/* --- Casete de bifare pentru selecție multiplă --- */
+.checkbox-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-top: 6px;
+}
+
+.custom-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: #444444;
+    cursor: pointer;
+    user-select: none; /* Previne selectarea accidentală a textului la click */
+}
+
+/* Redimensionăm și colorăm bifa nativă */
+.custom-checkbox input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: #3B5323; /* Asortează culoarea bifei cu butonul tău verde închis */
+    cursor: pointer;
+    margin: 0; /* Scoatem marginile implicite date de browser */
+}
+
+.custom-checkbox span {
+    font-weight: 400;
+}

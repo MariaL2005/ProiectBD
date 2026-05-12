@@ -64,14 +64,13 @@ CREATE TABLE conexiuni_adaposturi
 -- 5. Tabel Angajati
 CREATE TABLE angajati
 (
-    id          NUMBER DEFAULT seq_angajati.NEXTVAL PRIMARY KEY,
-    id_adapost  NUMBER        NOT NULL REFERENCES adaposturi (id),
-    nume        VARCHAR2(100) NOT NULL,
-    prenume     VARCHAR2(100) NOT NULL,
-    telefon     VARCHAR2(20),
-    functie     VARCHAR2(100),
-    salariu     NUMBER,
-    tip_angajat VARCHAR2(20) CHECK (tip_angajat IN ('MEDIC', 'INGRIJITOR', 'VOLUNTAR', 'EXTERN'))
+    id         NUMBER DEFAULT seq_angajati.NEXTVAL PRIMARY KEY,
+    id_adapost NUMBER        NOT NULL REFERENCES adaposturi (id),
+    nume       VARCHAR2(100) NOT NULL,
+    prenume    VARCHAR2(100) NOT NULL,
+    telefon    VARCHAR2(20),
+    functie    VARCHAR2(50)  CHECK (functie IN ('MEDIC', 'INGRIJITOR', 'VOLUNTAR', 'EXTERN')),
+    salariu    NUMBER
 );
 
 -- 6. Tabel Specializari (ce animale stie fiecare angajat)

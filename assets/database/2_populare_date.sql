@@ -72,8 +72,10 @@ BEGIN
 
                 v_nume_fam := nume_fam(TRUNC(DBMS_RANDOM.VALUE(0, nume_fam.COUNT)) + 1);
                 v_prenume := prenume_m(TRUNC(DBMS_RANDOM.VALUE(0, prenume_m.COUNT)) + 1);
-                INSERT INTO angajati (id_adapost, nume, prenume, functie, salariu, tip_angajat)
-                VALUES (v_id_adapost_random, v_nume_fam, v_prenume, 'Ingrijitor', 3500, 'INGRIJITOR');
+
+                -- AM MODIFICAT AICI: Inserăm doar coloana functie cu valoarea 'INGRIJITOR'
+                INSERT INTO angajati (id_adapost, nume, prenume, functie, salariu)
+                VALUES (v_id_adapost_random, v_nume_fam, v_prenume, 'INGRIJITOR', 3500);
             EXCEPTION WHEN OTHERS THEN NULL;
             END;
         END LOOP;
