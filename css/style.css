@@ -1,0 +1,153 @@
+/* --- Root Variables & Reset --- */
+:root {
+    --primary-green: #213A1D;     /* Dark green from the image */
+    --accent-gold: #FFF4D9;      /* Light cream/gold from the text and nav */
+    --font-family: 'Poppins', sans-serif; /* A nice modern sans-serif. You can use standard fonts like 'Arial' or 'Helvetica'. */
+    --container-width: 1200px;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-family);
+    background-color: var(--primary-green); /* The main green extends everywhere except the hero photo */
+    color: var(--accent-gold);
+    line-height: 1.6;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
+/* --- Layout Utilities --- */
+.container {
+    max-width: var(--container-width);
+    margin: 0 auto;
+    padding: 0 40px; /* Side padding for the section content */
+}
+
+/* --- Main Header / Navigation Bar --- */
+.main-header {
+    position: fixed; /* Place navigation on top of the hero image */
+    top: 30px;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+}
+
+.nav-container {
+    background-color: rgba(255, 244, 217, 0.7); /* The semi-transparent light gold bar */
+    border-radius: 100px; /* Highly rounded ends */
+    max-width: var(--container-width);
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.nav-logo {
+    display: flex;
+    align-items: center;
+}
+
+.placeholder-icon {
+    font-size: 24px;
+}
+
+.nav-links {
+    display: flex;
+    gap: 15px; /* Spaces out the text links */
+    align-items: center;
+}
+
+.nav-links a {
+    font-size: 14px;
+    font-weight: 500;
+    color: #444; /* Darker color for links inside nav bar */
+    transition: opacity 0.3s ease;
+}
+
+.nav-links a:not(.cta-button):hover {
+    opacity: 0.7;
+}
+
+.cta-button {
+    background-color: var(--accent-gold);
+    padding: 10px 25px;
+    border-radius: 50px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.15); /* Subtly defined shadow on the CTA */
+    font-weight: bold !important;
+}
+
+/* --- Hero Content Section --- */
+.hero-content {
+    background-image:linear-gradient(to bottom, transparent 60%, var(--primary-green) 100%), url('../assets/images/hero-bg.jpg'); /* The full background photo of pets */
+    background-size: cover;
+    background-position: center;
+    height: 100vh; /* Set to the full height of the viewport */
+    width: 100%;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+}
+
+.hero-content h1 {
+    font-size: 80px; /* Very large headline size */
+    font-weight: 700;
+    text-align: center;
+    letter-spacing: -2px; /* Slightly tighter letter spacing to match the look */
+    /* Since we position absolute the nav bar, the hero text is centered in the full vh. This looks right. */
+}
+
+/* --- About Us Section --- */
+.about-us {
+    background-color: var(--primary-green);
+    padding: 100px 0; /* Add top/bottom padding to space it out nicely */
+}
+
+.about-wrapper {
+    display: flex;
+    align-items: center; /* Aligns the text to the top, puppy image to its own width */
+    gap: 80px; /* Spaces out text and image */
+}
+
+.about-text {
+    flex: 1; /* Text column takes up available space */
+}
+
+.about-text h2 {
+    font-size: 48px;
+    margin-bottom: 30px;
+    font-weight: 700;
+}
+
+.about-text p {
+    font-size: 18px;
+    color: rgba(255, 244, 217, 0.9); /* Slightly more opaque body text for readability */
+    margin-bottom: 25px;
+    text-align: justify; /* This was subtle but adds to the clean lines */
+    line-height: 1.8; /* Increased line-height for readability on text paragraphs */
+}
+
+.about-image {
+    width: 600px; /* Fixed width for the rounded puppy picture */
+    flex-shrink: 0; /* Prevents the image container from shrinking in flex layout */
+}
+
+.about-image img {
+    border-radius: 40px; /* Highly rounded corners to match the design */
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2); /* Stronger shadow on the image for depth */
+}
