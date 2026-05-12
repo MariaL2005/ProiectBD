@@ -1,7 +1,7 @@
 /* --- Root Variables & Reset --- */
 :root {
-    --primary-green: #213A1D;     /* Dark green from the image */
-    --accent-gold: #FFF4D9;      /* Light cream/gold from the text and nav */
+    --primary-green: #213A1D; /* Dark green from the image */
+    --accent-gold: #FFF4D9; /* Light cream/gold from the text and nav */
     --font-family: 'Poppins', sans-serif; /* A nice modern sans-serif. You can use standard fonts like 'Arial' or 'Helvetica'. */
     --container-width: 1200px;
 }
@@ -55,7 +55,7 @@ img {
     justify-content: space-between;
     align-items: center;
     padding: 10px 20px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
 .nav-logo {
@@ -88,13 +88,13 @@ img {
     background-color: var(--accent-gold);
     padding: 10px 25px;
     border-radius: 50px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.15); /* Subtly defined shadow on the CTA */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15); /* Subtly defined shadow on the CTA */
     font-weight: bold !important;
 }
 
 /* --- Hero Content Section --- */
 .hero-content {
-    background-image:linear-gradient(to bottom, transparent 60%, var(--primary-green) 100%), url('../assets/images/hero-bg.jpg'); /* The full background photo of pets */
+    background-image: linear-gradient(to bottom, transparent 60%, var(--primary-green) 100%), url('../assets/images/hero-bg.jpg'); /* The full background photo of pets */
     background-size: cover;
     background-position: center;
     height: 100vh; /* Set to the full height of the viewport */
@@ -149,7 +149,7 @@ img {
 
 .about-image img {
     border-radius: 40px; /* Highly rounded corners to match the design */
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2); /* Stronger shadow on the image for depth */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); /* Stronger shadow on the image for depth */
 }
 
 /* ==========================================================================
@@ -312,4 +312,24 @@ img {
 
 .custom-checkbox span {
     font-weight: 400;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+    background: white;
+    margin: 10% auto;
+    padding: 30px;
+    border-radius: 15px;
+    width: 500px;
+    color: #333;
 }

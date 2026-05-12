@@ -45,7 +45,6 @@ document.addEventListener('DOMContentLoaded', () => {
         applyForm.addEventListener('submit', async (e) => {
             e.preventDefault(); // Oprim reîncărcarea paginii
 
-            // Preluăm datele textuale standard
             const formData = {
                 prenume: document.getElementById('firstName').value.trim(),
                 nume: document.getElementById('lastName').value.trim(),
@@ -58,36 +57,30 @@ document.addEventListener('DOMContentLoaded', () => {
                 limba_noua: document.getElementById('otherLanguage') ? document.getElementById('otherLanguage').value.trim() : ''
             };
 
-            // Colectăm bifele pentru specializări (specii de animale)
             applyForm.querySelectorAll('input[name="specializare"]:checked').forEach(cb => {
                 formData.specializari.push(cb.value);
             });
 
-            // Colectăm bifele pentru limbile standard
             applyForm.querySelectorAll('input[name="limba"]:checked').forEach(cb => {
                 formData.limbi.push(cb.value);
             });
 
-            // Validare 1: Cel puțin o specializare selectată
             if (formData.specializari.length === 0) {
                 alert('Te rog să selectezi cel puțin o specializare (specie de animal)!');
                 return;
             }
 
-            // Validare 2: Cel puțin o limbă bifată SAU scrisă manual la "Other"
             if (formData.limbi.length === 0 && formData.limba_noua === '') {
                 alert('Te rog să bifezi sau să introduci cel puțin o limbă cunoscută!');
                 return;
             }
 
             try {
-                // Schimbăm starea butonului pe durata procesării
                 const submitBtn = applyForm.querySelector('.form-submit-btn');
                 const originalBtnText = submitBtn.innerText;
                 submitBtn.innerText = 'Se salvează...';
                 submitBtn.disabled = true;
 
-                // Executăm cererea POST către server
                 const response = await fetch('http://localhost:3000/api/angajati', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -98,9 +91,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (response.ok && result.success) {
                     alert(`Felicitări! Profilul a fost salvat cu succes.\nID Angajat alocat: ${result.id}\nSalariu stabilit: ${result.salariuAlocat} €`);
-                    applyForm.reset(); // Golim formularul
+                    applyForm.reset();
 
-                    // Opțional: Reîncărcăm secțiunea de limbi în caz că a adăugat una nouă
                     if (formData.limba_noua !== '') {
                         window.location.reload();
                     }
@@ -108,7 +100,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     alert('Eroare la salvare: ' + (result.message || 'Verifică consola serverului.'));
                 }
 
-                // Restaurăm butonul
                 submitBtn.innerText = originalBtnText;
                 submitBtn.disabled = false;
 
@@ -135,7 +126,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // Afișăm un mesaj temporar de căutare
             resultsDiv.innerHTML = '<p style="color: var(--accent-gold);">Se caută parteneri compatibili...</p>';
 
             try {
@@ -161,7 +151,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     html += '</div>';
                     resultsDiv.innerHTML = html;
                 } else {
-                    // Afișăm motivul respingerii (vechime mică sau lipsă parteneri)
                     resultsDiv.innerHTML = `
                         <div style="padding: 15px; background-color: rgba(255, 255, 255, 0.08); border-radius: 8px; color: #FFF4D9; font-size: 14px;">
                             ℹ️ ${data.message || 'Nu s-au găsit parteneri.'}
@@ -176,3 +165,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 });
+
+// ========================================================================
+// FUNCȚII GLOBALE PENTRU UI (Afișare / Ascundere Modale)
+// ========================================================================
+window.showModal = (id) => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'block';
+};
+
+window.closeModal = (id) => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+};

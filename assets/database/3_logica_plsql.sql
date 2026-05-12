@@ -1,9 +1,6 @@
 -- ====================================================================
 -- SCRIPT 3: LOGICA AVANSATA PL/SQL (TRIGGERE SI PROCEDURI STOCATE)
 -- ====================================================================
-
-SET SERVEROUTPUT ON;
-
 -- --------------------------------------------------------------------
 -- 1. TRIGGER: Validare capacitate maximă cușcă la adăugarea unui animal
 -- --------------------------------------------------------------------
@@ -129,5 +126,64 @@ END LOOP;
 END IF;
 
     DBMS_OUTPUT.PUT_LINE('====================================================');
+END;
+/
+
+-- Procedură care returnează oportunitățile de schimb printr-un cursor
+CREATE OR REPLACE PROCEDURE get_exchange_opportunities(
+    p_emp_id IN NUMBER,
+    p_cursor OUT SYS_REFCURSOR
+) AS
+BEGIN
+    OPEN p_cursor FOR
+        SELECT DISTINCT
+            a_cand.nume || ' ' || a_cand.prenume AS NUME_PARTENER,
+            ad_dest.nume AS NUME_ADAPOST,
+            o_dest.nume AS ORAS,
+            t_dest.nume AS TARA,
+            a_cand.functie AS FUNCTIE
+        FROM angajati a_curr
+                 JOIN angajati a_cand ON a_cand.functie = a_curr.functie AND a_cand.id <> a_curr.id
+                 JOIN adaposturi ad_dest ON a_cand.id_adapost = ad_dest.id
+                 JOIN orase o_dest ON ad_dest.id_oras = o_dest.id
+                 JOIN tari t_dest ON o_dest.id_tara = t_dest.id
+        WHERE a_curr.id = p_emp_id
+          AND (SYSDATE - a_curr.data_angajarii) >= 180
+          AND ad_dest.accepta_vizite = 'DA'
+          AND ad_dest.id <> a_curr.id_adapost
+          AND EXISTS (
+            SELECT 1 FROM limbi_angajati la
+                              JOIN limbi_tari lt ON la.id_limba = lt.id_limba
+            WHERE la.id_angajat = a_curr.id AND lt.id_tara = t_dest.id
+        )
+          AND EXISTS (
+            SELECT 1 FROM specializari_angajati sa1
+                              JOIN specializari_angajati sa2 ON sa1.specie = sa2.specie
+            WHERE sa1.id_angajat = a_curr.id AND sa2.id_angajat = a_cand.id
+        );
+END;
+/
+
+-- 1. Adăugăm o coloană pentru descrierea animalului (pentru pagina de detalii)
+ALTER TABLE animale ADD descriere VARCHAR2(1000);
+
+-- 2. Procedură pentru înregistrarea unei returnări
+CREATE OR REPLACE PROCEDURE inregistreaza_returnare(
+    p_id_animal NUMBER,
+    p_motiv VARCHAR2
+) AS
+BEGIN
+    -- Actualizăm istoricul de adopții cu data returnării
+    UPDATE istoric_adoptii
+    SET data_returnare = SYSDATE,
+        motiv_returnare = p_motiv
+    WHERE id_animal = p_id_animal AND data_returnare IS NULL;
+
+    -- Schimbăm statusul animalului înapoi în DISPONIBIL
+    UPDATE animale
+    SET status = 'DISPONIBIL'
+    WHERE id = p_id_animal;
+
+    COMMIT;
 END;
 /

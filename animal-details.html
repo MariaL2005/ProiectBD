@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animal Profile - Shelter Management</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .details-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 40px;
+            margin-top: 30px;
+        }
+
+        .info-card {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            color: #333;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .history-section {
+            margin-top: 40px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            color: #333;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 15px;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background-color: #f8f9fa;
+            font-weight: 700;
+            color: var(--primary-green);
+        }
+
+        .status-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .status-DISPONIBIL {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .status-ADOPTAT {
+            background: #fff3e0;
+            color: #ef6c00;
+        }
+
+        .edit-btn {
+            background: var(--primary-green);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            float: right;
+        }
+
+        /* --- STILURI PENTRU FERESTRELE MODALE --- */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+        }
+
+        .modal-content {
+            background: white;
+            margin: 8% auto;
+            padding: 30px;
+            border-radius: 15px;
+            width: 500px;
+            max-width: 90%;
+            color: #333;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+
+        .close-btn {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            font-size: 24px;
+            cursor: pointer;
+            color: #888;
+        }
+        .close-btn:hover { color: #333; }
+    </style>
+</head>
+<body>
+
+<div id="header-placeholder"></div>
+
+<main class="container" style="padding-top: 120px; padding-bottom: 60px;">
+    <div id="loadingMessage">Loading animal profile...</div>
+
+    <div id="mainContent" style="display: none;">
+        <div class="details-grid">
+            <div class="info-card" style="text-align: center;">
+                <div id="animalIcon" style="font-size: 80px; margin-bottom: 20px;">🐶</div>
+                <h2 id="animalName" style="font-size: 32px; margin-bottom: 10px;">Name</h2>
+                <span id="animalStatus" class="status-badge">STATUS</span>
+                <hr style="margin: 20px 0; opacity: 0.1;">
+                <p><strong>ID:</strong> <span id="displayId"></span></p>
+                <p><strong>Shelter:</strong> <span id="displayShelter"></span></p>
+            </div>
+
+            <div class="info-card">
+                <button class="edit-btn" id="btnUpdate">Save Changes</button>
+                <h3 style="margin-bottom: 20px;">General Information</h3>
+                <form id="editForm" class="application-form" style="box-shadow: none; padding: 0;">
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label>Species</label>
+                            <input type="text" id="editSpecie" required>
+                        </div>
+                        <div class="input-group">
+                            <label>Breed</label>
+                            <input type="text" id="editRasa">
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label>Description / Notes</label>
+                        <textarea id="editDescriere" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ddd; min-height: 100px;"></textarea>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <section class="history-section">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h3 class="form-main-title" style="font-size: 28px;">Medical History</h3>
+                <button class="edit-btn" onclick="showModal('modalMedical')">+ Add Intervention</button>
+            </div>
+            <table id="medicalTable">
+                <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Type</th>
+                    <th>Description</th>
+                    <th>Cost (€)</th>
+                </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </section>
+
+        <section class="history-section">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h3 class="form-main-title" style="font-size: 28px;">Adoption History</h3>
+                <button class="edit-btn" onclick="showModal('modalAdoptie')" id="btnOpenAdopt" style="display:none;">+ Register Adoption</button>
+            </div>
+            <table id="adoptionTable">
+                <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Person</th>
+                    <th>Return Date</th>
+                    <th>Reason for Return</th>
+                </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </section>
+    </div>
+
+    <div id="modalMedical" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('modalMedical')">&times;</span>
+            <h3 style="margin-bottom: 20px; color: var(--primary-green);">Add Medical Intervention</h3>
+            <form id="formMedical" class="application-form" style="box-shadow: none; padding: 0;">
+                <div class="input-group">
+                    <label>Intervention Type</label>
+                    <input type="text" id="medTip" placeholder="e.g. Vaccin, Chirurgie, Deparazitare" required>
+                </div>
+                <div class="input-group">
+                    <label>Description</label>
+                    <textarea id="medDesc" placeholder="Details about the procedure..." style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ddd;"></textarea>
+                </div>
+                <div class="input-group">
+                    <label>Cost (€)</label>
+                    <input type="number" id="medCost" placeholder="e.g. 50" required>
+                </div>
+                <button type="submit" class="form-submit-btn" style="margin-top: 15px;">Save Intervention</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="modalAdoptie" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('modalAdoptie')">&times;</span>
+            <h3 style="margin-bottom: 20px; color: var(--primary-green);">Register Adoption</h3>
+            <form id="formAdoptie" class="application-form" style="box-shadow: none; padding: 0;">
+                <div class="input-row">
+                    <div class="input-group">
+                        <label>Adopter First Name</label>
+                        <input type="text" id="adoptPrenume" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Adopter Last Name</label>
+                        <input type="text" id="adoptNume" required>
+                    </div>
+                </div>
+                <div class="input-row">
+                    <div class="input-group">
+                        <label>Phone</label>
+                        <input type="tel" id="adoptTel" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Email</label>
+                        <input type="email" id="adoptEmail" required>
+                    </div>
+                </div>
+                <button type="submit" class="form-submit-btn" style="margin-top: 15px;">Confirm Adoption</button>
+            </form>
+        </div>
+    </div>
+
+</main>
+
+<script src="js/main.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', async () => {
+        const params = new URLSearchParams(window.location.search);
+        const animalId = params.get('id');
+
+        if (!animalId) {
+            window.location.href = 'adopt.html';
+            return;
+        }
+
+        // Funcția de încărcare a datelor animalului
+        async function loadProfile() {
+            try {
+                const response = await fetch(`http://localhost:3000/api/animale/${animalId}`);
+                const data = await response.json();
+                const animal = data.detalii;
+
+                // Populăm informațiile vizuale
+                document.getElementById('animalName').innerText = animal.NUME;
+                document.getElementById('displayId').innerText = animal.ID;
+                document.getElementById('displayShelter').innerText = animal.NUME_ADAPOST;
+                document.getElementById('animalStatus').innerText = animal.STATUS;
+                document.getElementById('animalStatus').className = 'status-badge status-' + animal.STATUS;
+                document.getElementById('animalIcon').innerText = animal.SPECIE === 'Pisici' ? '🐱' : '🐶';
+
+                // Afișăm butonul de adopție DOAR dacă animalul este DISPONIBIL
+                const btnAdopt = document.getElementById('btnOpenAdopt');
+                if (btnAdopt) {
+                    btnAdopt.style.display = animal.STATUS === 'DISPONIBIL' ? 'inline-block' : 'none';
+                }
+
+                // Populăm câmpurile formularului general
+                document.getElementById('editSpecie').value = animal.SPECIE;
+                document.getElementById('editRasa').value = animal.RASA || '';
+                document.getElementById('editDescriere').value = animal.DESCRIERE || '';
+
+                // Randăm tabelul cu istoricul medical
+                const medBody = document.querySelector('#medicalTable tbody');
+                medBody.innerHTML = data.medical.length ? data.medical.map(m => `
+                    <tr>
+                        <td>${new Date(m.DATA_INTERVENTIE).toLocaleDateString()}</td>
+                        <td>${m.TIPUL}</td>
+                        <td>${m.DESCRIERE || '-'}</td>
+                        <td>${m.COST}</td>
+                    </tr>
+                `).join('') : '<tr><td colspan="4">No medical records found.</td></tr>';
+
+                // Randăm tabelul cu istoricul adopțiilor
+                const adoptBody = document.querySelector('#adoptionTable tbody');
+                adoptBody.innerHTML = data.adoptii.length ? data.adoptii.map(a => `
+                    <tr>
+                        <td>${new Date(a.DATA_ADOPTIE).toLocaleDateString()}</td>
+                        <td>${a.NUME_PERSOANA}</td>
+                        <td>${a.DATA_RETURNARE ? new Date(a.DATA_RETURNARE).toLocaleDateString() : '-'}</td>
+                        <td>${a.MOTIV_RETURNARE || '-'}</td>
+                    </tr>
+                `).join('') : '<tr><td colspan="4">No adoption records found.</td></tr>';
+
+                document.getElementById('loadingMessage').style.display = 'none';
+                document.getElementById('mainContent').style.display = 'block';
+            } catch (error) {
+                console.error(error);
+                alert("Could not load animal profile data.");
+            }
+        }
+
+        // --- 1. SALVARE MODIFICĂRI GENERALE ---
+        document.getElementById('btnUpdate').addEventListener('click', async () => {
+            const updatedData = {
+                specie: document.getElementById('editSpecie').value.trim(),
+                rasa: document.getElementById('editRasa').value.trim(),
+                descriere: document.getElementById('editDescriere').value.trim()
+            };
+
+            const response = await fetch(`http://localhost:3000/api/animale/${animalId}`, {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(updatedData)
+            });
+
+            if (response.ok) {
+                alert("Profile updated successfully!");
+                loadProfile();
+            } else {
+                alert("Error updating profile.");
+            }
+        });
+
+        // --- 2. LOGICĂ TRIMITERE FORMULAR MEDICAL ---
+        const formMedical = document.getElementById('formMedical');
+        if (formMedical) {
+            formMedical.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const payload = {
+                    id_animal: animalId,
+                    tipul: document.getElementById('medTip').value.trim(),
+                    descriere: document.getElementById('medDesc').value.trim(),
+                    cost: document.getElementById('medCost').value
+                };
+
+                const res = await fetch('http://localhost:3000/api/interventii-medicale', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (res.ok) {
+                    alert("Intervenție adăugată cu succes!");
+                    formMedical.reset();
+                    closeModal('modalMedical');
+                    loadProfile(); // Reîncărcăm datele proaspete din BD
+                } else {
+                    alert("Eroare la salvarea intervenției.");
+                }
+            });
+        }
+
+        // --- 3. LOGICĂ TRIMITERE FORMULAR ADOPȚIE ---
+        const formAdoptie = document.getElementById('formAdoptie');
+        if (formAdoptie) {
+            formAdoptie.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const payload = {
+                    id_animal: animalId,
+                    nume: document.getElementById('adoptNume').value.trim(),
+                    prenume: document.getElementById('adoptPrenume').value.trim(),
+                    telefon: document.getElementById('adoptTel').value.trim(),
+                    email: document.getElementById('adoptEmail').value.trim()
+                };
+
+                const res = await fetch('http://localhost:3000/api/istoric-adoptii', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (res.ok) {
+                    alert("Adopție înregistrată cu succes! Statusul a fost actualizat.");
+                    formAdoptie.reset();
+                    closeModal('modalAdoptie');
+                    loadProfile(); // Reîncărcăm pagina (va prelua noul status automat)
+                } else {
+                    alert("Eroare la salvarea adopției.");
+                }
+            });
+        }
+
+        // Încărcăm profilul inițial
+        loadProfile();
+    });
+</script>
+</body>
+</html>

@@ -135,21 +135,37 @@ BEGIN
 
     -- Alocăm aleatoriu limbi cunoscute și o vechime random (între 10 zile și 3 ani) angajaților existenți
     FOR ang IN (SELECT id FROM angajati) LOOP
-            -- Setăm o dată de angajare în trecut
+            -- 1. Setăm o dată de angajare în trecut (vechime între 200 și 1000 de zile ca să treacă de filtrul de 6 luni)
             UPDATE angajati
-            SET data_angajarii = SYSDATE - TRUNC(DBMS_RANDOM.VALUE(10, 1000))
+            SET data_angajarii = SYSDATE - TRUNC(DBMS_RANDOM.VALUE(200, 1000)),
+                -- Diversificăm funcțiile (până acum toți erau doar INGRIJITOR)
+                functie = CASE TRUNC(DBMS_RANDOM.VALUE(1, 4))
+                              WHEN 1 THEN 'MEDIC'
+                              WHEN 2 THEN 'INGRIJITOR'
+                              ELSE 'VOLUNTAR'
+                    END
             WHERE id = ang.id;
 
-            -- Toți știu engleză (ca să avem match-uri mai ușor)
+            -- 2. Toți știu engleză (pentru a facilita potrivirile internaționale)
             INSERT INTO limbi_angajati VALUES (ang.id, v_id_en);
 
             -- 50% șansă să mai știe și altă limbă random
             IF DBMS_RANDOM.VALUE(0, 1) > 0.5 THEN
                 BEGIN
                     INSERT INTO limbi_angajati VALUES (ang.id, TRUNC(DBMS_RANDOM.VALUE(1, 4)));
-                EXCEPTION WHEN OTHERS THEN NULL; -- Evităm duplicatele
+                EXCEPTION WHEN OTHERS THEN NULL;
                 END;
             END IF;
+
+            -- 3. REZOLVAREA CRITICĂ: Le alocăm specializări pe animale!
+            BEGIN
+                INSERT INTO specializari_angajati (id_angajat, specie) VALUES (ang.id, 'Caini');
+                -- 50% șansă să fie specializați și pe Pisici
+                IF DBMS_RANDOM.VALUE(0, 1) > 0.5 THEN
+                    INSERT INTO specializari_angajati (id_angajat, specie) VALUES (ang.id, 'Pisici');
+                END IF;
+            EXCEPTION WHEN OTHERS THEN NULL;
+            END;
         END LOOP;
 
     COMMIT;
