@@ -1,7 +1,5 @@
 # ProiectBD
 
-#Cerinta
-
 Proiect 1 - Adăpost de animale
 
 O organizație deține mai multe adăposturi de animale în țările din Europa (sau Uniunea Europeană). Există adăposturi în majoritatea țărilor și orașelor din Europa. Pot exista mai multe într-un oraș sau se poate stabili existența unui singur adăpost per oraș. Fiecare adăpost are personal angajat și se cunoaște numele și prenumele acestuia, telefonul, funcția și un salariu fix. Un angajat lucrează într-un singur adăpost. Într-un adăpost animalele sunt împărțite pe specii (câini, pisici, etc.) și sunt ținute în cuști, mai multe animale de același tip (specie) per cușcă. O cușcă are o capacitate maximă în funcție de mărimea ei. Un animal are un nume, specie, rasă, data naștere posibilă și data intrare în adăpost. Un animal poate fi adoptat și se reține data adopției și datele de contact ale persoanei în cauză. O persoană poate returna un animal și se reține în baza de date acest lucru sub forma unui istoric al adopțiilor și eventual un motiv sau observație. Fiecare animal are o fișă medicală proprie unde pot apărea mai multe intervenții (vaccinuri, operații, controale periodice, etc.) la diferite date.
