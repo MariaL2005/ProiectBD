@@ -95,3 +95,63 @@ BEGIN
     COMMIT;
 END;
 /
+
+-- Inserăm 4 limbi de bază
+INSERT INTO limbi (nume) VALUES ('Romana');
+INSERT INTO limbi (nume) VALUES ('Engleza');
+INSERT INTO limbi (nume) VALUES ('Germana');
+INSERT INTO limbi (nume) VALUES ('Franceza');
+
+-- Facem maparea pentru țări (Presupunem că știm ID-urile din popularea anterioară sau le alocăm dinamic)
+DECLARE
+    v_id_ro NUMBER;
+    v_id_de NUMBER;
+    v_id_fr NUMBER;
+    v_id_en NUMBER;
+BEGIN
+    -- Preluăm ID-urile limbilor
+    SELECT id INTO v_id_ro FROM limbi WHERE nume = 'Romana';
+    SELECT id INTO v_id_en FROM limbi WHERE nume = 'Engleza';
+    SELECT id INTO v_id_de FROM limbi WHERE nume = 'Germana';
+    SELECT id INTO v_id_fr FROM limbi WHERE nume = 'Franceza';
+
+    -- Mapăm România (Română și Engleză ca limbă secundară acceptată în adăposturi)
+    FOR rec IN (SELECT id FROM tari WHERE nume = 'Romania') LOOP
+            INSERT INTO limbi_tari VALUES (rec.id, v_id_ro);
+            INSERT INTO limbi_tari VALUES (rec.id, v_id_en);
+        END LOOP;
+
+    -- Mapăm Germania (Germană și Engleză)
+    FOR rec IN (SELECT id FROM tari WHERE nume = 'Germania') LOOP
+            INSERT INTO limbi_tari VALUES (rec.id, v_id_de);
+            INSERT INTO limbi_tari VALUES (rec.id, v_id_en);
+        END LOOP;
+
+    -- Mapăm Franța (Franaceză și Engleză)
+    FOR rec IN (SELECT id FROM tari WHERE nume = 'Franta') LOOP
+            INSERT INTO limbi_tari VALUES (rec.id, v_id_fr);
+            INSERT INTO limbi_tari VALUES (rec.id, v_id_en);
+        END LOOP;
+
+    -- Alocăm aleatoriu limbi cunoscute și o vechime random (între 10 zile și 3 ani) angajaților existenți
+    FOR ang IN (SELECT id FROM angajati) LOOP
+            -- Setăm o dată de angajare în trecut
+            UPDATE angajati
+            SET data_angajarii = SYSDATE - TRUNC(DBMS_RANDOM.VALUE(10, 1000))
+            WHERE id = ang.id;
+
+            -- Toți știu engleză (ca să avem match-uri mai ușor)
+            INSERT INTO limbi_angajati VALUES (ang.id, v_id_en);
+
+            -- 50% șansă să mai știe și altă limbă random
+            IF DBMS_RANDOM.VALUE(0, 1) > 0.5 THEN
+                BEGIN
+                    INSERT INTO limbi_angajati VALUES (ang.id, TRUNC(DBMS_RANDOM.VALUE(1, 4)));
+                EXCEPTION WHEN OTHERS THEN NULL; -- Evităm duplicatele
+                END;
+            END IF;
+        END LOOP;
+
+    COMMIT;
+END;
+/

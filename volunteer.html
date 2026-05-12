@@ -81,6 +81,17 @@
                             <span>Rodents</span>
                         </label>
                     </div>
+                    <div class="input-group">
+                        <label>Languages Spoken</label>
+                        <div id="languagesContainer" class="checkbox-group">
+                            <p style="font-size: 12px; color: #666;">Loading languages...</p>
+                        </div>
+
+                        <div style="margin-top: 10px;">
+                            <label style="font-size: 12px; color: #666; margin-bottom: 4px; display: block;">Other language:</label>
+                            <input type="text" id="otherLanguage" placeholder="e.g. Italian, Spanish" style="border-style: dashed;">
+                        </div>
+                    </div>
                 </div>
 
                 <button type="submit" class="form-submit-btn">Submit Application</button>
@@ -93,6 +104,31 @@
 
     </div>
 </main>
+
+<section class="exchange-section" style="background-color: var(--primary-green); padding-bottom: 100px;">
+    <div class="container">
+        <hr style="border: 0; border-top: 1px solid rgba(255,244,217,0.2); margin: 0 0 60px 0;">
+
+        <div class="exchange-wrapper" style="max-width: 800px; margin: 0 auto; text-align: center;">
+            <h2 class="form-main-title" style="font-size: 36px;">Already an employee?</h2>
+            <p style="color: var(--accent-gold); margin-bottom: 30px; opacity: 0.8;">
+                Find your perfect match for an international experience exchange based on your skills and languages.
+            </p>
+
+            <div class="application-form" style="display: flex; gap: 15px; align-items: flex-end; text-align: left;">
+                <div class="input-group" style="flex: 1; margin-bottom: 0;">
+                    <label for="empIdSearch">Enter your Employee ID</label>
+                    <input type="number" id="empIdSearch" placeholder="e.g. 101" required>
+                </div>
+                <button type="button" id="btnCheckExchange" class="form-submit-btn" style="width: auto; padding: 12px 30px; margin-top: 0;">
+                    Check Opportunities
+                </button>
+            </div>
+
+            <div id="exchangeResults" style="margin-top: 30px;"></div>
+        </div>
+    </div>
+</section>
 
 <script src="js/main.js"></script>
 </body>

@@ -148,4 +148,40 @@ CREATE TABLE tranzactii_financiare
     descriere       VARCHAR2(250)
 );
 
+-- ====================================================================
+-- EXTINDERE SCHEMA: SCHIMB DE EXPERIENTA SI LIMBI VORBITE
+-- ====================================================================
+
+-- 1. Actualizăm tabelul ANGAJATI cu data angajării (pentru calculul vechimii)
+ALTER TABLE angajati
+    ADD data_angajarii DATE DEFAULT SYSDATE;
+
+-- 2. Actualizăm tabelul ADAPOSTURI cu disponibilitatea pentru vizite/schimburi
+ALTER TABLE adaposturi
+    ADD accepta_vizite VARCHAR2(2) DEFAULT 'DA' CHECK (accepta_vizite IN ('DA', 'NU'));
+
+
+-- 3. Creăm secvența și tabelul principal pentru LIMBI
+CREATE SEQUENCE seq_limbi;
+
+CREATE TABLE limbi (
+                       id   NUMBER DEFAULT seq_limbi.NEXTVAL PRIMARY KEY,
+                       nume VARCHAR2(50) NOT NULL UNIQUE
+);
+
+-- 4. Tabel de legătură Many-to-Many: Ce limbi se vorbesc în fiecare TARA
+CREATE TABLE limbi_tari (
+                            id_tara  NUMBER REFERENCES tari(id) ON DELETE CASCADE,
+                            id_limba NUMBER REFERENCES limbi(id) ON DELETE CASCADE,
+                            PRIMARY KEY (id_tara, id_limba)
+);
+
+-- 5. Tabel de legătură Many-to-Many: Ce limbi cunoaște fiecare ANGAJAT
+CREATE TABLE limbi_angajati (
+                                id_angajat NUMBER REFERENCES angajati(id) ON DELETE CASCADE,
+                                id_limba   NUMBER REFERENCES limbi(id) ON DELETE CASCADE,
+                                PRIMARY KEY (id_angajat, id_limba)
+);
+
 COMMIT;
+
