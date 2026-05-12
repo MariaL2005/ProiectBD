@@ -9,6 +9,7 @@ package-lock.json
 # --- Setari IDE (WebStorm / IntelliJ) ---
 # Ignoram setarile locale, dar pastram structura de baza daca e nevoie.
 # Din fisierul tau existent .idea/.gitignore rezulta ca urmatoarele sunt deja marcate:
+.idea/
 .idea/shelf/
 .idea/workspace.xml
 .idea/httpRequests/
