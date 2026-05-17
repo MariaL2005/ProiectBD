@@ -1,115 +1,70 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rescue a Pet - AdoptNow</title>
+    <meta charset="UTF-8"><title>Admit Pet - AdoptNow</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-
 <div id="header-placeholder"></div>
-
 <main class="apply-page">
     <div class="apply-container container">
-
         <div class="form-column">
-            <h1 class="form-main-title">Admit / Rescue a Pet</h1>
-            <p style="color: var(--accent-gold); margin-bottom: 20px; font-size: 15px;">
-                Found a stray animal? Bring them to us! Our smart routing system will automatically find the closest available shelter if your preferred location is at full capacity.
-            </p>
-
+            <h1>Smart Admission</h1>
             <form id="formAdmisie" class="application-form">
-
-                <div class="input-row">
-                    <div class="input-group">
-                        <label for="numeAnimal">Pet's Name (or given name):</label>
-                        <input type="text" id="numeAnimal" required placeholder="e.g. Max">
-                    </div>
-                    <div class="input-group">
-                        <label for="specieAnimal">Species:</label>
-                        <select id="specieAnimal" required>
-                            <option value="Caine">Dog (Câine)</option>
-                            <option value="Pisica">Cat (Pisică)</option>
-                            <option value="Pasare">Bird (Pasăre)</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="input-row">
-                    <div class="input-group">
-                        <label for="rasaAnimal">Breed (Rasa):</label>
-                        <input type="text" id="rasaAnimal" placeholder="e.g. Maidanez / Mixed">
-                    </div>
-                    <div class="input-group">
-                        <label for="dataNastere">Est. Birth Date:</label>
-                        <input type="date" id="dataNastere" required>
-                    </div>
-                </div>
-
                 <div class="input-group">
-                    <label for="adapostDorit">Preferred Drop-off Shelter:</label>
-                    <select id="adapostDorit" required>
-                        <option value="1">Shelter Speranța (București)</option>
-                        <option value="2">Shelter Les Amis (Paris)</option>
-                        <option value="3">Tierheim (Berlin)</option>
+                    <label>Name</label><input type="text" id="nume" required>
+                </div>
+                <div class="input-group">
+                    <label>Species</label>
+                    <select id="specie" required>
+                        <option value="Caine">Dog</option>
+                        <option value="Pisica">Cat</option>
+                        <option value="Pasare">Bird</option>
                     </select>
                 </div>
-
-                <button type="submit" class="form-submit-btn">🐾 Process Smart Admission</button>
+                <div class="input-group">
+                    <label>Breed</label><input type="text" id="rasa">
+                </div>
+                <div class="input-group">
+                    <label>Birth Date</label><input type="date" id="data">
+                </div>
+                <div class="input-group">
+                    <label>Target Shelter</label>
+                    <select id="adapostDorit" required><option>Loading...</option></select>
+                </div>
+                <button type="submit" class="form-submit-btn">Process Admission</button>
             </form>
-
-            <div id="mesajSistem" style="margin-top: 20px; font-weight: bold; text-align: center;"></div>
+            <div id="statusMsg"></div>
         </div>
-
-        <div class="image-column">
-            <img src="../assets/images/about-puppy.jpg" alt="Rescue a pet">
-        </div>
-
     </div>
 </main>
-
 <script src="js/main.js"></script>
-
 <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+        const res = await fetch('http://localhost:3000/api/adaposturi');
+        const data = await res.json();
+        const sel = document.getElementById('adapostDorit');
+        sel.innerHTML = '<option value="" disabled selected>Select Shelter</option>';
+        data.forEach(s => sel.innerHTML += `<option value="${s.ID}">${s.NUME}</option>`);
+    });
+
     document.getElementById('formAdmisie').addEventListener('submit', async (e) => {
         e.preventDefault();
-
-        const mesajDiv = document.getElementById('mesajSistem');
-        mesajDiv.style.color = 'white';
-        mesajDiv.innerText = 'Processing via Smart Routing... ⏳';
-
-        const data = {
-            nume: document.getElementById('numeAnimal').value,
-            specie: document.getElementById('specieAnimal').value,
-            rasa: document.getElementById('rasaAnimal').value,
-            dataNastere: document.getElementById('dataNastere').value,
+        const payload = {
+            nume: document.getElementById('nume').value,
+            specie: document.getElementById('specie').value,
+            rasa: document.getElementById('rasa').value,
+            dataNastere: document.getElementById('data').value,
             idAdapostDorit: document.getElementById('adapostDorit').value
         };
-
-        try {
-            const response = await fetch('http://localhost:3000/api/animale/admisie', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            });
-
-            const result = await response.json();
-
-            if (response.ok) {
-                // Succes total! (A găsit loc la destinație sau a fost rutat)
-                mesajDiv.style.color = '#28a745'; // Verde
-                mesajDiv.innerText = '🎉 ' + result.message;
-                document.getElementById('formAdmisie').reset();
-            } else {
-                // AICI SE AFIȘEAZĂ EROAREA TA PL/SQL (ORA-20001) CÂND E TOTUL PLIN!
-                mesajDiv.style.color = '#ff4d4d'; // Roșu
-                mesajDiv.innerText = '⚠️ ' + result.message;
-            }
-        } catch (error) {
-            mesajDiv.style.color = '#ff4d4d';
-            mesajDiv.innerText = 'Server connection failed.';
-        }
+        const res = await fetch('http://localhost:3000/api/animale/admisie', {
+            method: 'POST', headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(payload)
+        });
+        const result = await res.json();
+        const msg = document.getElementById('statusMsg');
+        msg.innerText = result.message;
+        msg.style.color = res.ok ? 'green' : 'red';
     });
 </script>
 </body>

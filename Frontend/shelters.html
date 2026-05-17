@@ -134,13 +134,6 @@
         <h1 class="section-main-title">Shelter Management & Analytics</h1>
         <p class="section-subtitle">Real-time predictive forecasting for resource allocation and monthly budgeting.</p>
 
-        <div class="map-section">
-            <h3 class="map-placeholder-title">🗺️ Interactive Shelters Map</h3>
-            <p style="color: #ccc; max-width: 500px; margin: 0 auto;">
-                [Map Component Placeholder] - În curând, aici se vor încărca coordonatele geografice din tabelul de orașe pentru a afișa locația exactă a fiecărui punct de salvare.
-            </p>
-        </div>
-
         <h2 style="color: #fff; font-size: 26px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
             🔮 Next Month Budget Forecasting
         </h2>
@@ -163,14 +156,14 @@
 
         try {
             const response = await fetch('http://localhost:3000/api/stats/buget');
-            const result = await response.json();
+            const data = await response.json(); // Acum 'data' este direct lista (array-ul) din Oracle
 
-            if (!response.ok || !result.success) {
-                gridContainer.innerHTML = `<p style="color: red;">❌ Error loading data: ${result.message}</p>`;
+            if (!response.ok) {
+                gridContainer.innerHTML = `<p style="color: red;">❌ Eroare server: Nu s-au putut încărca datele.</p>`;
                 return;
             }
 
-            const data = result.data;
+            // Dacă lista e goală
             if (data.length === 0) {
                 gridContainer.innerHTML = `<p style="color: var(--accent-gold);">No shelter data available in the system.</p>`;
                 return;
@@ -183,6 +176,7 @@
                 const card = document.createElement('div');
                 card.className = 'shelter-card';
 
+                // Folosim cheile cu MAJUSCULE pentru că așa le trimite Oracle
                 card.innerHTML = `
                     <h3 class="shelter-title">${shelter.NUME_ADAPOST}</h3>
 
@@ -211,8 +205,8 @@
             });
 
         } catch (error) {
-            console.error(error);
-            gridContainer.innerHTML = `<p style="color: red;">❌ Server communication failure.</p>`;
+            console.error("Eroare de comunicare:", error);
+            gridContainer.innerHTML = `<p style="color: #ff4d4d;">❌ Server communication failure. Verifica consola Node.js.</p>`;
         }
     }
 </script>

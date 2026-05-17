@@ -12,23 +12,12 @@
 
 <main class="apply-page" style="display: block;">
     <div class="container" style="max-width: 1200px; margin: 0 auto; padding-top: 40px;">
-
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px;">
-            <div style="text-align: left;">
-                <h1 class="form-main-title" style="font-size: 48px; margin-bottom: 10px;">Find Your Best Friend</h1>
-                <p style="color: var(--accent-gold); opacity: 0.8; font-size: 18px;">Give a rescued animal the loving home it deserves.</p>
-            </div>
-            <button class="form-submit-btn" style="width: auto; margin-top: 0;" onclick="showModal('modalAddAnimal')">+ Add New Animal</button>
-        </div>
-
         <section class="application-form" style="margin-bottom: 40px; display: flex; gap: 20px; align-items: flex-end; flex-wrap: wrap;">
+
             <div class="input-group" style="flex: 1; min-width: 200px; margin-bottom: 0;">
                 <label for="filterShelter" style="color: #444;">Shelter Location</label>
                 <select id="filterShelter">
                     <option value="">All Shelters</option>
-                    <option value="1">Shelter București</option>
-                    <option value="2">Shelter Berlin</option>
-                    <option value="3">Shelter Paris</option>
                 </select>
             </div>
 
@@ -41,8 +30,9 @@
                 <label for="filterSpecies" style="color: #444;">Species</label>
                 <select id="filterSpecies">
                     <option value="">All Species</option>
-                    <option value="Caini">Dogs (Câini)</option>
-                    <option value="Pisici">Cats (Pisici)</option>
+                    <option value="Caine">Dog (Câine)</option>
+                    <option value="Pisica">Cat (Pisică)</option>
+                    <option value="Pasare">Bird (Pasăre)</option>
                 </select>
             </div>
 
@@ -56,59 +46,32 @@
         </div>
 
     </div>
-    <div id="modalAddAnimal" class="modal" style="display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6);">
-        <div class="modal-content" style="background: white; margin: 5% auto; padding: 30px; border-radius: 15px; width: 600px; max-width: 90%; color: #333; position: relative;">
-            <span class="close-btn" style="position: absolute; right: 20px; top: 20px; font-size: 24px; cursor: pointer;" onclick="closeModal('modalAddAnimal')">&times;</span>
-            <h3 style="margin-bottom: 25px; color: var(--primary-green); font-size: 24px;">Register New Animal</h3>
-
-            <form id="formAddAnimal" class="application-form" style="box-shadow: none; padding: 0;">
-                <div class="input-row">
-                    <div class="input-group">
-                        <label>Name</label>
-                        <input type="text" id="addNume" required placeholder="e.g. Rex">
-                    </div>
-                    <div class="input-group">
-                        <label>Species</label>
-                        <select id="addSpecie" required>
-                            <option value="Caini">Dog (Câine)</option>
-                            <option value="Pisici">Cat (Pisici)</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="input-row">
-                    <div class="input-group">
-                        <label>Breed</label>
-                        <input type="text" id="addRasa" placeholder="e.g. Golden Retriever">
-                    </div>
-                    <div class="input-group">
-                        <label>Cage ID</label>
-                        <input type="number" id="addCusca" required placeholder="e.g. 1">
-                    </div>
-                </div>
-
-                <div class="input-group">
-                    <label>Birth Date</label>
-                    <input type="date" id="addDataNastere" required>
-                </div>
-
-                <div class="input-group">
-                    <label>Description</label>
-                    <textarea id="addDescriere" placeholder="Personality, health notes..." style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ddd; min-height: 80px;"></textarea>
-                </div>
-
-                <button type="submit" class="form-submit-btn" style="margin-top: 15px;">Add to Shelter</button>
-            </form>
-        </div>
-    </div>
 </main>
 
 <script src="js/main.js"></script>
 <script>
-    // Adăugăm logica specifică paginii de adopții direct aici sau în main.js
     document.addEventListener('DOMContentLoaded', () => {
         const animalGrid = document.getElementById('animalGrid');
         const btnFilter = document.getElementById('btnFilter');
+        const filterShelter = document.getElementById('filterShelter');
+
+        // --- FUNCȚIE NOUĂ: ÎNCĂRCARE ADĂPOSTURI DIN BAZA DE DATE ---
+        async function loadShelters() {
+            try {
+                const response = await fetch('http://localhost:3000/api/adaposturi');
+                const adaposturi = await response.json();
+
+                // Păstrăm opțiunea "All Shelters" și le adăugăm pe cele din DB
+                adaposturi.forEach(ad => {
+                    const option = document.createElement('option');
+                    option.value = ad.ID;
+                    option.textContent = ad.NUME;
+                    filterShelter.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading shelters:', error);
+            }
+        }
 
         // Funcția care încarcă animalele de la server
         async function loadAnimals() {
@@ -119,7 +82,6 @@
             animalGrid.innerHTML = '<p style="color: var(--accent-gold);">Searching for pets...</p>';
 
             try {
-                // Construim query string-ul dinamic
                 let url = `http://localhost:3000/api/animale?status=DISPONIBIL`;
                 if (shelter) url += `&id_adapost=${shelter}`;
                 if (breed) url += `&rasa=${encodeURIComponent(breed)}`;
@@ -131,17 +93,16 @@
                 if (response.ok && animals.length > 0) {
                     let html = '';
                     animals.forEach(a => {
-                        // Folosim culorile și umbrele din style.css pentru carduri
                         html += `
                             <div style="background-color: #FFFFFF; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.15); display: flex; flex-direction: column;">
                                 <div style="background-color: #EAEAEA; height: 200px; display: flex; align-items: center; justify-content: center; font-size: 48px;">
-                                    ${a.SPECIE === 'Pisici' ? '🐱' : '🐶'}
+                                    ${(a.SPECIE === 'Pisica' || a.SPECIE === 'Pisici') ? '🐱' : '🐶'}
                                 </div>
                                 <div style="padding: 25px; display: flex; flex-direction: column; flex: 1;">
                                     <h3 style="font-size: 24px; color: #213A1D; margin-bottom: 5px; font-weight: 700;">${a.NUME}</h3>
                                     <p style="color: #666; font-size: 14px; margin-bottom: 15px;">
                                         <strong>Breed:</strong> ${a.RASA || 'Unknown'}<br>
-                                        <strong>Shelter ID:</strong> ${a.ID_ADAPOST}
+                                        <strong>Shelter:</strong> ${a.ID_ADAPOST}
                                     </p>
                                     <div style="margin-top: auto; padding-top: 15px; border-top: 1px solid #EEE; text-align: right;">
                                         <a href="animal-details.html?id=${a.ID}" class="cta-button" style="display: inline-block; font-size: 13px;">View Profile</a>
@@ -160,51 +121,12 @@
             }
         }
 
-        // Încărcăm animalele la pornire
-        loadAnimals();
+        // Inițializăm pagina
+        loadShelters(); // Mai întâi încărcăm lista de locații
+        loadAnimals();  // Apoi încărcăm toate animalele
 
-        // Reîncărcăm la apăsarea butonului de filtrare
         if (btnFilter) {
             btnFilter.addEventListener('click', loadAnimals);
-        }
-        // --- LOGICĂ TRIMITERE FORMULAR ANIMAL NOU ---
-        const formAddAnimal = document.getElementById('formAddAnimal');
-        if (formAddAnimal) {
-            formAddAnimal.addEventListener('submit', async (e) => {
-                e.preventDefault();
-
-                const payload = {
-                    nume: document.getElementById('addNume').value.trim(),
-                    specie: document.getElementById('addSpecie').value,
-                    rasa: document.getElementById('addRasa').value.trim(),
-                    id_cusca: parseInt(document.getElementById('addCusca').value),
-                    data_nastere: document.getElementById('addDataNastere').value,
-                    descriere: document.getElementById('addDescriere').value.trim()
-                };
-
-                try {
-                    const response = await fetch('http://localhost:3000/api/animale', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-
-                    const result = await response.json();
-
-                    if (response.ok && result.success) {
-                        alert(`Animal registered successfully! ID assigned: ${result.id}`);
-                        formAddAnimal.reset();
-                        closeModal('modalAddAnimal');
-                        loadAnimals(); // Reîncărcăm grid-ul pentru a vedea noul animal
-                    } else {
-                        // Aici va prinde și eroarea de la trigger dacă cușca e plină!
-                        alert("Error: " + (result.message || "Could not register animal."));
-                    }
-                } catch (error) {
-                    console.error('Error:', error);
-                    alert("Connection error.");
-                }
-            });
         }
     });
 </script>

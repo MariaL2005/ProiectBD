@@ -1,92 +1,53 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Support Us - AdoptNow</title>
-
+    <meta charset="UTF-8"><title>Donate - AdoptNow</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-
 <div id="header-placeholder"></div>
-
-<main class="apply-page">
-    <div class="apply-container container">
-
-        <div class="form-column">
-            <h1 class="form-main-title">Support Our Shelters</h1>
-            <p style="color: var(--accent-gold); margin-bottom: 30px; opacity: 0.9; font-size: 16px;">
-                Your financial support helps us provide food, medical care, and a safe shelter for our animals. Every contribution directly funds the wellbeing of a rescued pet.
-            </p>
-
-            <form id="formDonatie" class="application-form">
-                <div class="input-group">
-                    <label for="adapostSelect">I want to support:</label>
-                    <select id="adapostSelect" required>
-                        <option value="1">Shelter București</option>
-                        <option value="2">Shelter Cluj</option>
-                        <option value="3">Shelter Iași</option>
-                    </select>
-                </div>
-
-                <div class="input-row">
-                    <div class="input-group">
-                        <label for="sumaDonatie">Amount (RON):</label>
-                        <input type="number" id="sumaDonatie" min="10" step="1" placeholder="e.g. 50" required>
-                    </div>
-                </div>
-
-                <div class="input-group">
-                    <label for="mesajDonatie">Leave a message (Optional):</label>
-                    <input type="text" id="mesajDonatie" placeholder="Thank you for your wonderful work!">
-                </div>
-
-                <button type="submit" class="form-submit-btn">💖 Send Donation</button>
-            </form>
-        </div>
-
-        <div class="image-column">
-            <img src="../assets/images/about-puppy.jpg" alt="Happy puppy supported by donations">
-        </div>
-
+<main class="apply-page container">
+    <div class="form-column">
+        <h1>Support Our Mission</h1>
+        <form id="formDonatie" class="application-form">
+            <div class="input-group">
+                <label>Shelter</label>
+                <select id="idAdapost" required><option>Loading...</option></select>
+            </div>
+            <div class="input-group">
+                <label>Amount (RON)</label><input type="number" id="suma" required>
+            </div>
+            <div class="input-group">
+                <label>Message</label><input type="text" id="descriere">
+            </div>
+            <button type="submit" class="form-submit-btn">Send Donation</button>
+        </form>
+        <div id="msg"></div>
     </div>
 </main>
-
 <script src="js/main.js"></script>
-
 <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+        const res = await fetch('http://localhost:3000/api/adaposturi');
+        const data = await res.json();
+        const sel = document.getElementById('idAdapost');
+        sel.innerHTML = '<option value="" disabled selected>Choose Shelter</option>';
+        data.forEach(s => sel.innerHTML += `<option value="${s.ID}">${s.NUME}</option>`);
+    });
+
     document.getElementById('formDonatie').addEventListener('submit', async (e) => {
-        e.preventDefault(); // Oprim refresh-ul paginii
-
-        const dateCerere = {
-            idAdapost: document.getElementById('adapostSelect').value,
-            suma: document.getElementById('sumaDonatie').value,
-            descriere: document.getElementById('mesajDonatie').value
+        e.preventDefault();
+        const payload = {
+            idAdapost: document.getElementById('idAdapost').value,
+            suma: document.getElementById('suma').value,
+            descriere: document.getElementById('descriere').value
         };
-
-        try {
-            // Trimitem cererea POST către backend-ul de pe portul 3000
-            const response = await fetch('http://localhost:3000/api/donatii', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(dateCerere)
-            });
-
-            const result = await response.json();
-
-            if (response.ok) {
-                alert('🎉 ' + result.message);
-                document.getElementById('formDonatie').reset(); // Golește formularul
-            } else {
-                alert('❌ A apărut o problemă: ' + result.message);
-            }
-        } catch (error) {
-            console.error("Eroare FETCH:", error);
-            alert('Eroare de conexiune la server!');
-        }
+        const res = await fetch('http://localhost:3000/api/finante/donatie', {
+            method: 'POST', headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(payload)
+        });
+        document.getElementById('msg').innerText = res.ok ? "Thank you!" : "Error processing donation";
     });
 </script>
-
 </body>
 </html>

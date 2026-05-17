@@ -98,3 +98,25 @@ BEGIN
     WHERE id = :NEW.id_animal;
 END;
 /
+
+-- PROCEDURA PENTRU RETURNARE ANIMAL
+CREATE OR REPLACE PROCEDURE sp_returnare_animal (
+    p_id_animal IN NUMBER,
+    p_motiv IN VARCHAR2
+) IS
+BEGIN
+    -- 1. Actualizăm ultima înregistrare din istoric (cea care nu are încă dată de returnare)
+    UPDATE istoric_adoptii
+    SET data_returnare = SYSDATE,
+        motiv_returnare = p_motiv
+    WHERE id_animal = p_id_animal
+      AND data_returnare IS NULL;
+
+    -- 2. Schimbăm statusul animalului înapoi în DISPONIBIL
+    UPDATE animale
+    SET status = 'DISPONIBIL'
+    WHERE id = p_id_animal;
+
+    COMMIT;
+END;
+/

@@ -53,10 +53,7 @@
                     <div class="input-group">
                         <label for="shelter">Select Shelter</label>
                         <select id="shelter" name="id_adapost" required>
-                            <option value="">-- Choose location --</option>
-                            <option value="1">Shelter București</option>
-                            <option value="2">Shelter Berlin</option>
-                            <option value="3">Shelter Paris</option>
+                            <option value="">-- Loading locations... --</option>
                         </select>
                     </div>
                 </div>
@@ -64,32 +61,15 @@
                 <div class="input-group">
                     <label>Animal Specialization</label>
                     <div class="checkbox-group">
-                        <label class="custom-checkbox">
-                            <input type="checkbox" name="specializare" value="Caini">
-                            <span>Dogs</span>
-                        </label>
-                        <label class="custom-checkbox">
-                            <input type="checkbox" name="specializare" value="Pisici">
-                            <span>Cats</span>
-                        </label>
-                        <label class="custom-checkbox">
-                            <input type="checkbox" name="specializare" value="Pasari">
-                            <span>Birds</span>
-                        </label>
-                        <label class="custom-checkbox">
-                            <input type="checkbox" name="specializare" value="Rozatoare">
-                            <span>Rodents</span>
-                        </label>
+                        <label class="custom-checkbox"><input type="checkbox" name="specializare" value="Caini"><span>Dogs</span></label>
+                        <label class="custom-checkbox"><input type="checkbox" name="specializare" value="Pisici"><span>Cats</span></label>
+                        <label class="custom-checkbox"><input type="checkbox" name="specializare" value="Pasari"><span>Birds</span></label>
                     </div>
-                    <div class="input-group">
+
+                    <div class="input-group" style="margin-top: 20px;">
                         <label>Languages Spoken</label>
                         <div id="languagesContainer" class="checkbox-group">
                             <p style="font-size: 12px; color: #666;">Loading languages...</p>
-                        </div>
-
-                        <div style="margin-top: 10px;">
-                            <label style="font-size: 12px; color: #666; margin-bottom: 4px; display: block;">Other language:</label>
-                            <input type="text" id="otherLanguage" placeholder="e.g. Italian, Spanish" style="border-style: dashed;">
                         </div>
                     </div>
                 </div>
@@ -125,11 +105,69 @@
                 </button>
             </div>
 
-            <div id="exchangeResults" style="margin-top: 30px;"></div>
+            <div id="exchangeResults" style="margin-top: 30px; color: white;"></div>
         </div>
     </div>
 </section>
 
 <script src="js/main.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', async () => {
+        const shelterSelect = document.getElementById('shelter');
+        const languagesContainer = document.getElementById('languagesContainer');
+
+        // 1. Încărcăm adăposturile din bază
+        try {
+            const res = await fetch('http://localhost:3000/api/adaposturi');
+            const data = await res.json();
+            shelterSelect.innerHTML = '<option value="">-- Choose location --</option>';
+            data.forEach(s => {
+                shelterSelect.innerHTML += `<option value="${s.ID}">${s.NUME}</option>`;
+            });
+        } catch (err) { shelterSelect.innerHTML = '<option>Error loading shelters</option>'; }
+
+        // 2. Încărcăm limbile din bază
+        try {
+            const res = await fetch('http://localhost:3000/api/limbi');
+            const data = await res.json();
+            languagesContainer.innerHTML = '';
+            data.forEach(l => {
+                languagesContainer.innerHTML += `
+                    <label class="custom-checkbox">
+                        <input type="checkbox" name="id_limba" value="${l.ID}">
+                        <span>${l.NUME}</span>
+                    </label>
+                `;
+            });
+        } catch (err) { languagesContainer.innerHTML = '<p>Error loading languages.</p>'; }
+
+        // 3. Logică verificare schimb experiență
+        document.getElementById('btnCheckExchange').addEventListener('click', async () => {
+            const empId = document.getElementById('empIdSearch').value;
+            const resultsDiv = document.getElementById('exchangeResults');
+            if (!empId) return alert("Please enter an ID.");
+
+            resultsDiv.innerHTML = "Searching...";
+            try {
+                const res = await fetch(`http://localhost:3000/api/schimb-experienta/${empId}`);
+                const data = await res.json();
+
+                if (data.length === 0) {
+                    resultsDiv.innerHTML = "<p>No matching exchange opportunities found for your profile yet.</p>";
+                } else {
+                    let html = '<ul style="list-style: none; padding: 0;">';
+                    data.forEach(match => {
+                        html += `<li style="background: rgba(255,255,255,0.1); padding: 15px; margin: 10px 0; border-radius: 8px;">
+                            Match found at <strong>${match.ADAPOST_DESTINATIE}</strong> (${match.ORAS_DESTINATIE})
+                            - Language match: ${match.LIMBA_COMUNA}
+                        </li>`;
+                    });
+                    html += '</ul>';
+                    resultsDiv.innerHTML = html;
+                }
+            } catch (err) { resultsDiv.innerHTML = "Error checking opportunities."; }
+        });
+    });
+</script>
 </body>
 </html>
