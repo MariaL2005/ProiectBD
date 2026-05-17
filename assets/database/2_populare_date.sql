@@ -1,173 +1,115 @@
-DECLARE
-    -- Liste de date
-    TYPE lista_text IS VARRAY(100) OF VARCHAR2(255);
-    tari_nume lista_text := lista_text('Romania', 'Germania', 'Franta', 'Italia', 'Spania', 'Olanda', 'Belgia', 'Austria', 'Grecia', 'Polonia');
-    orase_ro lista_text := lista_text('Bucuresti', 'Cluj-Napoca', 'Timisoara', 'Iasi', 'Brasov');
-    orase_eu lista_text := lista_text('Berlin', 'Paris', 'Roma', 'Madrid', 'Amsterdam');
-    nume_fam lista_text := lista_text('Popescu', 'Ionescu', 'Radu', 'Stan', 'Dumitru', 'Lupu');
-    prenume_m lista_text := lista_text('Andrei', 'Mihai', 'Alexandru', 'Stefan', 'Cristian');
-    nume_animale lista_text := lista_text('Rex', 'Grivei', 'Pufi', 'Tom', 'Azor', 'Mitzi');
+-- =========================================================================
+-- SCRIPT 2: POPULARE AUTOMATIZATĂ (CU COMMIT INTERMEDIAR PENTRU AUTONOMOUS TRANSACTION)
+-- =========================================================================
 
-    -- Variabile pentru ID-uri
-    v_id_romania NUMBER;
-    v_id_tara_random NUMBER;
-    v_id_oras_random NUMBER;
-    v_id_cusca_random NUMBER;
-    v_id_adapost_random NUMBER;
-
-    -- Variabile temporare pentru texte
-    v_nume_tara VARCHAR2(255);
-    v_nume_oras VARCHAR2(255);
-    v_nume_fam VARCHAR2(255);
-    v_prenume VARCHAR2(255);
-    v_nume_pet VARCHAR2(255);
 BEGIN
-    -- 1. Populare TARI (cu protectie la duplicate)
-    FOR i IN 1..tari_nume.COUNT LOOP
-            BEGIN
-                v_nume_tara := tari_nume(i);
-                INSERT INTO tari (nume) VALUES (v_nume_tara);
-            EXCEPTION
-                WHEN OTHERS THEN NULL; -- Daca tara exista deja, ignoram si trecem mai departe
-            END;
-        END LOOP;
-
-    -- Aflam ID-ul Romaniei
-    SELECT id INTO v_id_romania FROM tari WHERE nume = 'Romania';
-
-    -- 2. Populare ORASE (cu protectie)
-    FOR i IN 1..orase_ro.COUNT LOOP
-            BEGIN
-                v_nume_oras := orase_ro(i);
-                INSERT INTO orase (id_tara, nume) VALUES (v_id_romania, v_nume_oras);
-            EXCEPTION WHEN OTHERS THEN NULL;
-            END;
-        END LOOP;
-
-    FOR i IN 1..orase_eu.COUNT LOOP
-            BEGIN
-                v_nume_oras := orase_eu(i);
-                SELECT id INTO v_id_tara_random FROM (SELECT id FROM tari WHERE nume <> 'Romania' ORDER BY DBMS_RANDOM.VALUE()) WHERE ROWNUM = 1;
-                INSERT INTO orase (id_tara, nume) VALUES (v_id_tara_random, v_nume_oras);
-            EXCEPTION WHEN OTHERS THEN NULL;
-            END;
-        END LOOP;
-
-    -- 3. Populare ADAPOSTURI
-    FOR rec IN (SELECT id, nume FROM orase) LOOP
-            BEGIN
-                INSERT INTO adaposturi (id_oras, nume, strada, capacitate_maxima)
-                VALUES (rec.id, 'Adapost ' || rec.nume, 'Str. Principala nr. ' || TRUNC(DBMS_RANDOM.VALUE(1, 50)), 100);
-            EXCEPTION WHEN OTHERS THEN NULL;
-            END;
-        END LOOP;
-
-    -- 4. Populare CUSTI si ANGAJATI
-    FOR i IN 1..20 LOOP
-            BEGIN
-                SELECT id INTO v_id_adapost_random FROM (SELECT id FROM adaposturi ORDER BY DBMS_RANDOM.VALUE()) WHERE ROWNUM = 1;
-
-                INSERT INTO custi (id_adapost, capacitate, specie_destinata)
-                VALUES (v_id_adapost_random, 5, 'Caini');
-
-                v_nume_fam := nume_fam(TRUNC(DBMS_RANDOM.VALUE(0, nume_fam.COUNT)) + 1);
-                v_prenume := prenume_m(TRUNC(DBMS_RANDOM.VALUE(0, prenume_m.COUNT)) + 1);
-
-                -- AM MODIFICAT AICI: Inserăm doar coloana functie cu valoarea 'INGRIJITOR'
-                INSERT INTO angajati (id_adapost, nume, prenume, functie, salariu)
-                VALUES (v_id_adapost_random, v_nume_fam, v_prenume, 'INGRIJITOR', 3500);
-            EXCEPTION WHEN OTHERS THEN NULL;
-            END;
-        END LOOP;
-
-    -- 5. Populare ANIMALE
-    FOR i IN 1..20 LOOP
-            BEGIN
-                SELECT id INTO v_id_cusca_random FROM (SELECT id FROM custi ORDER BY DBMS_RANDOM.VALUE()) WHERE ROWNUM = 1;
-                v_nume_pet := nume_animale(TRUNC(DBMS_RANDOM.VALUE(0, nume_animale.COUNT)) + 1);
-
-                INSERT INTO animale (id_cusca, nume, specie, status)
-                VALUES (v_id_cusca_random, v_nume_pet, 'Caini', 'DISPONIBIL');
-            EXCEPTION WHEN OTHERS THEN NULL;
-            END;
-        END LOOP;
-
+    -- Curățăm tabelele în ordine inversă pentru a proteja cheile străine.
+    DELETE FROM istoric_adoptii WHERE 1=1;
+    DELETE FROM interventii_medicale WHERE 1=1;
+    DELETE FROM tranzactii_financiare WHERE 1=1;
+    DELETE FROM animale WHERE 1=1;
+    DELETE FROM persoane WHERE 1=1;
+    DELETE FROM custi WHERE 1=1;
+    DELETE FROM specializari_angajati WHERE 1=1;
+    DELETE FROM limbi_angajati WHERE 1=1;
+    DELETE FROM angajati WHERE 1=1;
+    DELETE FROM conexiuni_adaposturi WHERE 1=1;
+    DELETE FROM adaposturi WHERE 1=1;
+    DELETE FROM orase WHERE 1=1;
+    DELETE FROM limbi_tari WHERE 1=1;
+    DELETE FROM tari WHERE 1=1;
+    DELETE FROM limbi WHERE 1=1;
     COMMIT;
 END;
 /
 
--- Inserăm 4 limbi de bază
-INSERT INTO limbi (nume) VALUES ('Romana');
-INSERT INTO limbi (nume) VALUES ('Engleza');
-INSERT INTO limbi (nume) VALUES ('Germana');
-INSERT INTO limbi (nume) VALUES ('Franceza');
-
--- Facem maparea pentru țări (Presupunem că știm ID-urile din popularea anterioară sau le alocăm dinamic)
 DECLARE
-    v_id_ro NUMBER;
-    v_id_de NUMBER;
-    v_id_fr NUMBER;
-    v_id_en NUMBER;
+    TYPE t_str_array IS VARRAY(15) OF VARCHAR2(100);
+
+    v_tari_nume t_str_array := t_str_array('Romania', 'Franta', 'Germania', 'Italia', 'Spania', 'Austria', 'Olanda', 'Cehia', 'Polonia', 'Ungaria', 'Belgia', 'Portugalia', 'Grecia', 'Irlanda', 'Danemarca');
+    v_orase_nume t_str_array := t_str_array('Bucuresti', 'Paris', 'Berlin', 'Roma', 'Madrid', 'Viena', 'Amsterdam', 'Praga', 'Varsovia', 'Budapesta', 'Bruxelles', 'Lisabona', 'Atena', 'Dublin', 'Copenhaga');
+    v_adap_nume t_str_array := t_str_array('Speranta', 'Les Amis', 'Tierheim', 'Amici di Roma', 'Refugio', 'Wiener Pfoten', 'Amsterdam Paws', 'Prague Rescue', 'Warsaw Pets', 'Budapest Hope', 'Brussel Shelter', 'Porto Seguro', 'Athena Rescue', 'Dublin Animals', 'Danish Hope');
+    v_limbi_nume t_str_array := t_str_array('Romana', 'Franceza', 'Germana', 'Italiana', 'Spaniola', 'Austriaca', 'Olandeza', 'Ceha', 'Poloneza', 'Maghiara', 'Flamanda', 'Portugheza', 'Greaca', 'Irlandeza', 'Daneza');
+    v_specii t_str_array := t_str_array('Caine', 'Pisica', 'Caine', 'Pisica', 'Caine', 'Pasare', 'Pisica', 'Caine', 'Caine', 'Pisica', 'Pasare', 'Caine', 'Pisica', 'Caine', 'Pisica');
+
+    TYPE t_num_array IS TABLE OF NUMBER INDEX BY BINARY_INTEGER;
+    arr_tari t_num_array;
+    arr_orase t_num_array;
+    arr_adaposturi t_num_array;
+    arr_angajati t_num_array;
+    arr_custi t_num_array;
+    arr_persoane t_num_array;
+    arr_limbi t_num_array;
+    arr_animale t_num_array;
+
+    v_functie VARCHAR2(50);
+    v_tranzactie VARCHAR2(50);
+
 BEGIN
-    -- Preluăm ID-urile limbilor
-    SELECT id INTO v_id_ro FROM limbi WHERE nume = 'Romana';
-    SELECT id INTO v_id_en FROM limbi WHERE nume = 'Engleza';
-    SELECT id INTO v_id_de FROM limbi WHERE nume = 'Germana';
-    SELECT id INTO v_id_fr FROM limbi WHERE nume = 'Franceza';
+    -- PASUL 1: Inserăm entitățile de bază
+    FOR i IN 1..15 LOOP
+            INSERT INTO limbi (nume) VALUES (v_limbi_nume(i)) RETURNING id INTO arr_limbi(i);
+            INSERT INTO tari (nume) VALUES (v_tari_nume(i)) RETURNING id INTO arr_tari(i);
+            INSERT INTO orase (id_tara, nume) VALUES (arr_tari(i), v_orase_nume(i)) RETURNING id INTO arr_orase(i);
 
-    -- Mapăm România (Română și Engleză ca limbă secundară acceptată în adăposturi)
-    FOR rec IN (SELECT id FROM tari WHERE nume = 'Romania') LOOP
-            INSERT INTO limbi_tari VALUES (rec.id, v_id_ro);
-            INSERT INTO limbi_tari VALUES (rec.id, v_id_en);
+            INSERT INTO adaposturi (id_oras, nume, strada, capacitate_maxima, accepta_vizite)
+            VALUES (arr_orase(i), v_adap_nume(i), 'Street ' || i, 100 + (i*10), 'DA') RETURNING id INTO arr_adaposturi(i);
+
+            IF MOD(i, 3) = 0 THEN v_functie := 'MEDIC';
+            ELSIF MOD(i, 3) = 1 THEN v_functie := 'INGRIJITOR';
+            ELSE v_functie := 'VOLUNTAR'; END IF;
+
+            INSERT INTO angajati (id_adapost, nume, prenume, telefon, functie, salariu, data_angajarii)
+            VALUES (arr_adaposturi(i), 'Nume_'||i, 'Prenume_'||i, '0700111'||LPAD(i, 3, '0'), v_functie, 3000 + (i*50), SYSDATE - (i*10)) RETURNING id INTO arr_angajati(i);
+
+            INSERT INTO custi (id_adapost, capacitate, specie_destinata)
+            VALUES (arr_adaposturi(i), 5, v_specii(i)) RETURNING id INTO arr_custi(i);
+
+            INSERT INTO persoane (nume, prenume, telefon, email, adresa)
+            VALUES ('Adoptator_'||i, 'Familia_'||i, '0722333'||LPAD(i, 3, '0'), 'client'||i||'@test.com', v_orase_nume(i)) RETURNING id INTO arr_persoane(i);
         END LOOP;
 
-    -- Mapăm Germania (Germană și Engleză)
-    FOR rec IN (SELECT id FROM tari WHERE nume = 'Germania') LOOP
-            INSERT INTO limbi_tari VALUES (rec.id, v_id_de);
-            INSERT INTO limbi_tari VALUES (rec.id, v_id_en);
-        END LOOP;
+    -- PASUL 2: Inserăm tabelele de legătură și restul datelor
+    FOR i IN 1..15 LOOP
+            INSERT INTO limbi_tari (id_tara, id_limba) VALUES (arr_tari(i), arr_limbi(i));
+            INSERT INTO limbi_angajati (id_angajat, id_limba) VALUES (arr_angajati(i), arr_limbi(i));
+            INSERT INTO specializari_angajati (id_angajat, specie) VALUES (arr_angajati(i), v_specii(i));
 
-    -- Mapăm Franța (Franaceză și Engleză)
-    FOR rec IN (SELECT id FROM tari WHERE nume = 'Franta') LOOP
-            INSERT INTO limbi_tari VALUES (rec.id, v_id_fr);
-            INSERT INTO limbi_tari VALUES (rec.id, v_id_en);
-        END LOOP;
-
-    -- Alocăm aleatoriu limbi cunoscute și o vechime random (între 10 zile și 3 ani) angajaților existenți
-    FOR ang IN (SELECT id FROM angajati) LOOP
-            -- 1. Setăm o dată de angajare în trecut (vechime între 200 și 1000 de zile ca să treacă de filtrul de 6 luni)
-            UPDATE angajati
-            SET data_angajarii = SYSDATE - TRUNC(DBMS_RANDOM.VALUE(200, 1000)),
-                -- Diversificăm funcțiile (până acum toți erau doar INGRIJITOR)
-                functie = CASE TRUNC(DBMS_RANDOM.VALUE(1, 4))
-                              WHEN 1 THEN 'MEDIC'
-                              WHEN 2 THEN 'INGRIJITOR'
-                              ELSE 'VOLUNTAR'
-                    END
-            WHERE id = ang.id;
-
-            -- 2. Toți știu engleză (pentru a facilita potrivirile internaționale)
-            INSERT INTO limbi_angajati VALUES (ang.id, v_id_en);
-
-            -- 50% șansă să mai știe și altă limbă random
-            IF DBMS_RANDOM.VALUE(0, 1) > 0.5 THEN
-                BEGIN
-                    INSERT INTO limbi_angajati VALUES (ang.id, TRUNC(DBMS_RANDOM.VALUE(1, 4)));
-                EXCEPTION WHEN OTHERS THEN NULL;
-                END;
+            IF i < 15 THEN
+                INSERT INTO conexiuni_adaposturi (id_adapost1, id_adapost2, distanta_km) VALUES (arr_adaposturi(i), arr_adaposturi(i+1), 50 + i);
+            ELSE
+                INSERT INTO conexiuni_adaposturi (id_adapost1, id_adapost2, distanta_km) VALUES (arr_adaposturi(15), arr_adaposturi(1), 120);
             END IF;
 
-            -- 3. REZOLVAREA CRITICĂ: Le alocăm specializări pe animale!
-            BEGIN
-                INSERT INTO specializari_angajati (id_angajat, specie) VALUES (ang.id, 'Caini');
-                -- 50% șansă să fie specializați și pe Pisici
-                IF DBMS_RANDOM.VALUE(0, 1) > 0.5 THEN
-                    INSERT INTO specializari_angajati (id_angajat, specie) VALUES (ang.id, 'Pisici');
-                END IF;
-            EXCEPTION WHEN OTHERS THEN NULL;
-            END;
+            -- ========================================================
+            -- FIX PENTRU TRIGGER: Acordăm un buget de start și îi dăm COMMIT IMEDIAT!
+            -- ========================================================
+            INSERT INTO tranzactii_financiare (id_adapost, tip_tranzactie, suma, descriere)
+            VALUES (arr_adaposturi(i), 'VENIT_GRANT', 10000, 'Buget initial stat');
+
+            COMMIT; -- Salvează banii instant ca să îi poată "vedea" trigger-ul autonom mai jos!
+
+            -- Acum putem simula tranzacții random (Cheltuieli/Donații) fără probleme
+            IF MOD(i, 2) = 0 THEN v_tranzactie := 'VENIT_DONATIE'; ELSE v_tranzactie := 'CHELTUIALA_MEDICALA'; END IF;
+            INSERT INTO tranzactii_financiare (id_adapost, tip_tranzactie, suma, descriere)
+            VALUES (arr_adaposturi(i), v_tranzactie, 500 + (i*10), 'Tranzactie curenta');
+
+            -- Inserăm animale și adopții
+            INSERT INTO animale (id_cusca, nume, specie, rasa, data_nastere, status)
+            VALUES (arr_custi(i), 'Animal_'||i, v_specii(i), 'Comuna', SYSDATE - 100, 'DISPONIBIL') RETURNING id INTO arr_animale(i);
+
+            INSERT INTO animale (id_cusca, nume, specie, rasa, data_nastere, status)
+            VALUES (arr_custi(i), 'Animal_Rezerva_'||i, v_specii(i), 'Comuna', SYSDATE - 200, 'DISPONIBIL');
+
+            INSERT INTO interventii_medicale (id_animal, tipul, descriere, cost)
+            VALUES (arr_animale(i), 'Vaccin', 'Procedura standard', 150 + i);
+
+            INSERT INTO istoric_adoptii (id_animal, id_persoana, data_adoptie)
+            VALUES (arr_animale(i), arr_persoane(i), SYSDATE);
+
         END LOOP;
 
     COMMIT;
+    DBMS_OUTPUT.PUT_LINE('Scriptul a rulat cu succes! Toate adăposturile au primit buget de start și tabelele sunt pline.');
 END;
 /

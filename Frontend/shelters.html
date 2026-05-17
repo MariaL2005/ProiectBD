@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Our Shelters & Analytics - AdoptNow</title>
+
+    <link rel="stylesheet" href="css/style.css">
+
+    <style>
+        .shelters-page {
+            padding: 60px 0;
+            background: linear-gradient(135deg, var(--primary-green), #0a2419);
+            min-height: calc(100vh - 80px);
+            color: #fff;
+        }
+
+        .map-section {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px dashed var(--accent-gold);
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 50px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+        }
+
+        .map-placeholder-title {
+            color: var(--accent-gold);
+            font-size: 22px;
+            margin-bottom: 10px;
+        }
+
+        .shelters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .shelter-card {
+            background: #fff;
+            color: #333;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+            transition: transform 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .shelter-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .shelter-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 6px;
+            background-color: var(--accent-gold);
+        }
+
+        .shelter-title {
+            font-size: 22px;
+            color: var(--primary-green);
+            margin-bottom: 20px;
+            font-weight: 700;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 10px;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 15px;
+        }
+
+        .stat-label {
+            color: #666;
+        }
+
+        .stat-value {
+            font-weight: 600;
+            color: #111;
+        }
+
+        .total-row {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 2px dashed #e9e9e9;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .total-label {
+            font-weight: 700;
+            color: var(--primary-green);
+            font-size: 16px;
+        }
+
+        .total-value {
+            font-size: 20px;
+            font-weight: 800;
+            color: #28a745;
+        }
+
+        .section-main-title {
+            font-size: 36px;
+            color: #fff;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .section-subtitle {
+            text-align: center;
+            color: var(--accent-gold);
+            margin-bottom: 40px;
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+
+<div id="header-placeholder"></div>
+
+<main class="shelters-page">
+    <div class="container">
+
+        <h1 class="section-main-title">Shelter Management & Analytics</h1>
+        <p class="section-subtitle">Real-time predictive forecasting for resource allocation and monthly budgeting.</p>
+
+        <div class="map-section">
+            <h3 class="map-placeholder-title">🗺️ Interactive Shelters Map</h3>
+            <p style="color: #ccc; max-width: 500px; margin: 0 auto;">
+                [Map Component Placeholder] - În curând, aici se vor încărca coordonatele geografice din tabelul de orașe pentru a afișa locația exactă a fiecărui punct de salvare.
+            </p>
+        </div>
+
+        <h2 style="color: #fff; font-size: 26px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
+            🔮 Next Month Budget Forecasting
+        </h2>
+
+        <div id="sheltersGrid" class="shelters-grid">
+            <p style="color: var(--accent-gold);">Loading dynamic predictive data from Oracle...</p>
+        </div>
+
+    </div>
+</main>
+
+<script src="js/main.js"></script>
+
+<script>
+    // Rulăm funcția imediat ce se încarcă pagina
+    document.addEventListener('DOMContentLoaded', fetchBudgetPredictions);
+
+    async function fetchBudgetPredictions() {
+        const gridContainer = document.getElementById('sheltersGrid');
+
+        try {
+            const response = await fetch('http://localhost:3000/api/stats/buget');
+            const result = await response.json();
+
+            if (!response.ok || !result.success) {
+                gridContainer.innerHTML = `<p style="color: red;">❌ Error loading data: ${result.message}</p>`;
+                return;
+            }
+
+            const data = result.data;
+            if (data.length === 0) {
+                gridContainer.innerHTML = `<p style="color: var(--accent-gold);">No shelter data available in the system.</p>`;
+                return;
+            }
+
+            // Curățăm containerul și construim cardurile dinamic
+            gridContainer.innerHTML = '';
+
+            data.forEach(shelter => {
+                const card = document.createElement('div');
+                card.className = 'shelter-card';
+
+                card.innerHTML = `
+                    <h3 class="shelter-title">${shelter.NUME_ADAPOST}</h3>
+
+                    <div class="stat-row">
+                        <span class="stat-label">🥩 Estimated Food Cost:</span>
+                        <span class="stat-value">${shelter.ESTIMAT_HRANA.toLocaleString()} RON</span>
+                    </div>
+
+                    <div class="stat-row">
+                        <span class="stat-label">💊 Estimated Medical Expenses:</span>
+                        <span class="stat-value">${shelter.ESTIMAT_MEDICAL.toLocaleString()} RON</span>
+                    </div>
+
+                    <div class="stat-row">
+                        <span class="stat-label">💼 Employee Salaries:</span>
+                        <span class="stat-value">${shelter.ESTIMAT_SALARII.toLocaleString()} RON</span>
+                    </div>
+
+                    <div class="total-row">
+                        <span class="total-label">💰 Required Budget:</span>
+                        <span class="total-value">${shelter.TOTAL_LUNA_VIITOARE.toLocaleString()} RON</span>
+                    </div>
+                `;
+
+                gridContainer.appendChild(card);
+            });
+
+        } catch (error) {
+            console.error(error);
+            gridContainer.innerHTML = `<p style="color: red;">❌ Server communication failure.</p>`;
+        }
+    }
+</script>
+
+</body>
+</html>

@@ -4,5 +4,7 @@
     <file url="file://$PROJECT_DIR$/assets/database/1_creare_tabele.sql" dialect="Oracle" />
     <file url="file://$PROJECT_DIR$/assets/database/2_populare_date.sql" dialect="Oracle" />
     <file url="file://$PROJECT_DIR$/assets/database/3_logica_plsql.sql" dialect="Oracle" />
+    <file url="file://$PROJECT_DIR$/assets/database/4_logica_financiara.sql" dialect="Oracle" />
+    <file url="file://$PROJECT_DIR$/assets/database/5_statistici_predictii.sql" dialect="Oracle" />
   </component>
 </project>

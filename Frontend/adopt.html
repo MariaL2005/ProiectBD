@@ -13,11 +13,12 @@
 <main class="apply-page" style="display: block;">
     <div class="container" style="max-width: 1200px; margin: 0 auto; padding-top: 40px;">
 
-        <div style="text-align: center; margin-bottom: 40px;">
-            <h1 class="form-main-title" style="font-size: 48px; margin-bottom: 10px;">Find Your Best Friend</h1>
-            <p style="color: var(--accent-gold); opacity: 0.8; font-size: 18px;">
-                Give a rescued animal the loving home it deserves.
-            </p>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px;">
+            <div style="text-align: left;">
+                <h1 class="form-main-title" style="font-size: 48px; margin-bottom: 10px;">Find Your Best Friend</h1>
+                <p style="color: var(--accent-gold); opacity: 0.8; font-size: 18px;">Give a rescued animal the loving home it deserves.</p>
+            </div>
+            <button class="form-submit-btn" style="width: auto; margin-top: 0;" onclick="showModal('modalAddAnimal')">+ Add New Animal</button>
         </div>
 
         <section class="application-form" style="margin-bottom: 40px; display: flex; gap: 20px; align-items: flex-end; flex-wrap: wrap;">
@@ -54,6 +55,51 @@
             <p style="color: var(--accent-gold);">Loading available pets...</p>
         </div>
 
+    </div>
+    <div id="modalAddAnimal" class="modal" style="display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6);">
+        <div class="modal-content" style="background: white; margin: 5% auto; padding: 30px; border-radius: 15px; width: 600px; max-width: 90%; color: #333; position: relative;">
+            <span class="close-btn" style="position: absolute; right: 20px; top: 20px; font-size: 24px; cursor: pointer;" onclick="closeModal('modalAddAnimal')">&times;</span>
+            <h3 style="margin-bottom: 25px; color: var(--primary-green); font-size: 24px;">Register New Animal</h3>
+
+            <form id="formAddAnimal" class="application-form" style="box-shadow: none; padding: 0;">
+                <div class="input-row">
+                    <div class="input-group">
+                        <label>Name</label>
+                        <input type="text" id="addNume" required placeholder="e.g. Rex">
+                    </div>
+                    <div class="input-group">
+                        <label>Species</label>
+                        <select id="addSpecie" required>
+                            <option value="Caini">Dog (Câine)</option>
+                            <option value="Pisici">Cat (Pisici)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="input-row">
+                    <div class="input-group">
+                        <label>Breed</label>
+                        <input type="text" id="addRasa" placeholder="e.g. Golden Retriever">
+                    </div>
+                    <div class="input-group">
+                        <label>Cage ID</label>
+                        <input type="number" id="addCusca" required placeholder="e.g. 1">
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>Birth Date</label>
+                    <input type="date" id="addDataNastere" required>
+                </div>
+
+                <div class="input-group">
+                    <label>Description</label>
+                    <textarea id="addDescriere" placeholder="Personality, health notes..." style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ddd; min-height: 80px;"></textarea>
+                </div>
+
+                <button type="submit" class="form-submit-btn" style="margin-top: 15px;">Add to Shelter</button>
+            </form>
+        </div>
     </div>
 </main>
 
@@ -120,6 +166,45 @@
         // Reîncărcăm la apăsarea butonului de filtrare
         if (btnFilter) {
             btnFilter.addEventListener('click', loadAnimals);
+        }
+        // --- LOGICĂ TRIMITERE FORMULAR ANIMAL NOU ---
+        const formAddAnimal = document.getElementById('formAddAnimal');
+        if (formAddAnimal) {
+            formAddAnimal.addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const payload = {
+                    nume: document.getElementById('addNume').value.trim(),
+                    specie: document.getElementById('addSpecie').value,
+                    rasa: document.getElementById('addRasa').value.trim(),
+                    id_cusca: parseInt(document.getElementById('addCusca').value),
+                    data_nastere: document.getElementById('addDataNastere').value,
+                    descriere: document.getElementById('addDescriere').value.trim()
+                };
+
+                try {
+                    const response = await fetch('http://localhost:3000/api/animale', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    const result = await response.json();
+
+                    if (response.ok && result.success) {
+                        alert(`Animal registered successfully! ID assigned: ${result.id}`);
+                        formAddAnimal.reset();
+                        closeModal('modalAddAnimal');
+                        loadAnimals(); // Reîncărcăm grid-ul pentru a vedea noul animal
+                    } else {
+                        // Aici va prinde și eroarea de la trigger dacă cușca e plină!
+                        alert("Error: " + (result.message || "Could not register animal."));
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert("Connection error.");
+                }
+            });
         }
     });
 </script>

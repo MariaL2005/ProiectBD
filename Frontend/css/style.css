@@ -94,7 +94,7 @@ img {
 
 /* --- Hero Content Section --- */
 .hero-content {
-    background-image: linear-gradient(to bottom, transparent 60%, var(--primary-green) 100%), url('../assets/images/hero-bg.jpg'); /* The full background photo of pets */
+    background-image: linear-gradient(to bottom, transparent 60%, var(--primary-green) 100%), url('../../assets/images/hero-bg.jpg'); /* The full background photo of pets */
     background-size: cover;
     background-position: center;
     height: 100vh; /* Set to the full height of the viewport */

@@ -15,9 +15,9 @@ class AnimalRepository {
 
     async getAnimalDetails(connection, id) {
         const info = await connection.execute(
-            `SELECT a.*, ad.nume as nume_adapost FROM animale a 
-             JOIN custi c ON a.id_cusca = c.id 
-             JOIN adaposturi ad ON c.id_adapost = ad.id WHERE a.id = :id`,
+            `SELECT a.*, ad.nume as nume_adapost FROM animale a
+                                                          JOIN custi c ON a.id_cusca = c.id
+                                                          JOIN adaposturi ad ON c.id_adapost = ad.id WHERE a.id = :id`,
             [id], { outFormat: oracledb.OUT_FORMAT_OBJECT }
         );
         return info.rows[0];
@@ -33,17 +33,17 @@ class AnimalRepository {
 
     async getAdoptionHistory(connection, id) {
         const result = await connection.execute(
-            `SELECT h.*, p.nume || ' ' || p.prenume as nume_persoana FROM istoric_adoptii h 
-             JOIN persoane p ON h.id_persoana = p.id WHERE h.id_animal = :id ORDER BY data_adoptie DESC`,
+            `SELECT h.*, p.nume || ' ' || p.prenume as nume_persoana FROM istoric_adoptii h
+                                                                              JOIN persoane p ON h.id_persoana = p.id WHERE h.id_animal = :id ORDER BY data_adoptie DESC`,
             [id], { outFormat: oracledb.OUT_FORMAT_OBJECT }
         );
         return result.rows;
     }
 
     async insertAnimal(connection, data) {
-        const sql = `INSERT INTO animale (id_cusca, nume, specie, rasa, data_nastere, descriere) 
-                     VALUES (:id_cusca, :nume, :specie, :rasa, TO_DATE(:data_nastere, 'YYYY-MM-DD'), :descriere) 
-                     RETURNING id INTO :id`;
+        const sql = `INSERT INTO animale (id_cusca, nume, specie, rasa, data_nastere, descriere)
+                     VALUES (:id_cusca, :nume, :specie, :rasa, TO_DATE(:data_nastere, 'YYYY-MM-DD'), :descriere)
+                         RETURNING id INTO :id`;
         const result = await connection.execute(sql, {
             id_cusca: data.id_cusca, nume: data.nume, specie: data.specie, rasa: data.rasa,
             data_nastere: data.data_nastere, descriere: data.descriere,
@@ -81,6 +81,43 @@ class AnimalRepository {
             { id_animal: animalId, id_persoana: personId }
         );
     }
-}
 
+    // ========================================================
+    // FUNCȚIA NOUĂ - RUTARE INTELIGENTĂ
+    // ========================================================
+    async admisieAnimalInteligenta(connection, dateAnimal) {
+        const sql = `
+            BEGIN 
+                sp_admisie_animal_inteligenta(
+                    :nume, 
+                    :specie, 
+                    :rasa, 
+                    :idAdapostDorit, 
+                    TO_DATE(:dataNastere, 'YYYY-MM-DD')
+                ); 
+            END;
+        `;
+
+        try {
+            await connection.execute(sql, {
+                nume: dateAnimal.nume,
+                specie: dateAnimal.specie,
+                rasa: dateAnimal.rasa || 'Comună',
+                idAdapostDorit: parseInt(dateAnimal.idAdapostDorit),
+                dataNastere: dateAnimal.dataNastere
+            });
+
+            return { success: true, message: 'Animalul a fost procesat și rutat cu succes în rețea!' };
+        } catch (error) {
+            // Prindem eroarea PL/SQL custom (ORA-20001) și o trimitem la frontend
+            if (error.message && error.message.includes('ORA-20001')) {
+                const cleanMessage = error.message.split('ORA-20001: ')[1].split('\n')[0];
+                throw new Error(cleanMessage);
+            }
+            throw error; // Aruncăm mai departe erorile neașteptate
+        }
+    }
+} // Finalul clasei AnimalRepository
+
+// Exportăm o instanță a clasei pentru a fi folosită în routes
 module.exports = new AnimalRepository();
