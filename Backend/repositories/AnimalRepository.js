@@ -5,9 +5,11 @@ class AnimalRepository {
         let sql = `SELECT a.*, c.id_adapost FROM animale a JOIN custi c ON a.id_cusca = c.id WHERE 1=1`;
         const binds = {};
 
-        if (filters.rasa) { sql += ` AND a.rasa = :rasa`; binds.rasa = filters.rasa; }
+        // Am adăugat filtrul lipsă pentru specie!
+        if (filters.specie) { sql += ` AND UPPER(a.specie) = UPPER(:specie)`; binds.specie = filters.specie; }
+        if (filters.rasa) { sql += ` AND UPPER(a.rasa) = UPPER(:rasa)`; binds.rasa = filters.rasa; }
         if (filters.id_adapost) { sql += ` AND c.id_adapost = :id_adapost`; binds.id_adapost = filters.id_adapost; }
-        if (filters.status) { sql += ` AND a.status = :status`; binds.status = filters.status; }
+        if (filters.status) { sql += ` AND UPPER(a.status) = UPPER(:status)`; binds.status = filters.status; }
 
         const result = await connection.execute(sql, binds, { outFormat: oracledb.OUT_FORMAT_OBJECT });
         return result.rows;
@@ -82,9 +84,6 @@ class AnimalRepository {
         );
     }
 
-    // ========================================================
-    // FUNCȚIA NOUĂ - RUTARE INTELIGENTĂ
-    // ========================================================
     async admisieAnimalInteligenta(connection, dateAnimal) {
         const sql = `
             BEGIN 
@@ -109,15 +108,13 @@ class AnimalRepository {
 
             return { success: true, message: 'Animalul a fost procesat și rutat cu succes în rețea!' };
         } catch (error) {
-            // Prindem eroarea PL/SQL custom (ORA-20001) și o trimitem la frontend
             if (error.message && error.message.includes('ORA-20001')) {
                 const cleanMessage = error.message.split('ORA-20001: ')[1].split('\n')[0];
                 throw new Error(cleanMessage);
             }
-            throw error; // Aruncăm mai departe erorile neașteptate
+            throw error;
         }
     }
-} // Finalul clasei AnimalRepository
+}
 
-// Exportăm o instanță a clasei pentru a fi folosită în routes
 module.exports = new AnimalRepository();

@@ -99,4 +99,23 @@ router.post('/donatii', async (req, res) => {
     }
 });
 
-module.exports = router;
+// --- RUTĂ PENTRU LISTA DINAMICĂ DE ADĂPOSTURI ---
+router.get('/adaposturi', async (req, res) => {
+    let connection;
+    try {
+        connection = await oracledb.getConnection(dbConfig);
+        const result = await connection.execute(
+            `SELECT id, nume FROM adaposturi ORDER BY nume`,
+            [], { outFormat: oracledb.OUT_FORMAT_OBJECT }
+        );
+        res.status(200).json(result.rows);
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    } finally {
+        if (connection) {
+            try { await connection.close(); } catch (err) { console.error(err); }
+        }
+    }
+});
+
+module.exports = router; // <-- Acesta e ultimul rând din fișierul tău
